@@ -22,6 +22,14 @@ const ApplicationErrors = {
     EMAIL_TEMPLATE_NOT_FOUND:{
         message: 'Email Template not found',
         code: 'EMAIL_TEMPLATE_NOT_FOUND'
+    },
+    RECORD_DATA_FETCHING_ERROR:{
+      code: 'RECORD_DATA_FETCHING_ERROR',
+      message: "Error occured while fetching dta for record"
+    },
+    SCHEMA_VALIDATION_ERROR:{
+      code : 'SCHEMA_VALIDATION_ERROR',
+      message: 'SCHEMA_VALIDATION_ERROR'
     }
   };
   

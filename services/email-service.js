@@ -8,8 +8,24 @@ const emailClient = new AWS.SES();
  */
 class EmailService {
 
+    static emailData = {
+        dataFetchedSuceessfull: null,
+        emailParams: {
+        },
+        receiverEmail: null
+    }
 
+    static getEmailDataObj(){
+        let obj = {};
+        obj = Object.assign(obj,this.emailData);
+        return obj;
+    }
 
+    static validate(data) {
+        if(!data.receiverEmail || !data.emailParams){
+            throw new CustomEmailError(ApplicationErrors.SCHEMA_VALIDATION_ERROR, null, null);
+        }
+    }
     static seggregateRecordsByEmailType(messages) {
         let map = {};
         let noCategoryMessageIds = [];
@@ -20,11 +36,11 @@ class EmailService {
                     map[emailType] = [];
                 }
                 map[emailType].push(message);
-            }else{
+            } else {
                 noCategoryMessageIds.push(message.messageId)
             }
         });
-        return {emailTypesMap: map, noCategoryMessageIds:noCategoryMessageIds};
+        return { emailTypesMap: map, noCategoryMessageIds: noCategoryMessageIds };
     }
 
     static getEmailTypeForMessage(message) {

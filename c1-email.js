@@ -6,6 +6,7 @@ const ApplicationErrors = require('./utilities/application-errors');
 const getDataForIeltsEmailType = require("./services/email-data-services/ielts-feedback");
 const EmailService = require("./services/email-service");
 const config = require('./config/default.config');
+
 const main = async (event, context) => {
   try {
 
@@ -13,84 +14,118 @@ const main = async (event, context) => {
     const logger = Logger.getLogger();
     logger.info(`Started processing '${event.Records.length}' records.`);
 
-    let messageArray = event.Records.map((record, index) => {
+    let messageArray = event.Records.map((record) => {
 
       const bodyObj = JSON.parse(record.body);
-      const scoreObj = JSON.parse(bodyObj.Message);
-      scoreObj["index"] = index;
-      scoreObj["messageId"] = record.messageId;
-      return scoreObj
+      const msgObj = JSON.parse(bodyObj.Message);
+      msgObj["messageId"] = record.messageId;
+      // msgObj["ApproximateReceiveCount"] = record["attributes"]["ApproximateReceiveCount"]
+      Logger.initRecordLogger(context, record, bodyObj);
+
+
+      return msgObj;
 
     });
+
     let sucessfullyProcessedMessageIds = [];
     // step1: seggregateRecordsByEmailType
     const { emailTypesMap, noCategoryMessageIds } = EmailService.seggregateRecordsByEmailType(messageArray);
 
+    Logger.info("following messageIds do not belong to any category " + JSON.stringify(noCategoryMessageIds));
+
     sucessfullyProcessedMessageIds = sucessfullyProcessedMessageIds.concat(noCategoryMessageIds);
 
 
-    const sendEmailPromisesForAllTypes = [];
+    const EmailPromisesForAllTypes = [];
 
     for (const emailType in emailTypesMap) {
 
       let emailPromise = new Promise(async (resolve, reject) => {
 
-        let dataForEmailType;
+        logger.info(`Processing data for '${emailType}' type.`);
 
+        let dataForEmailType;
+        // Use switch case when new types are added.
+        // ADD_NEW_EMAIL: introduce handling for any new email type to be added;
         if (emailType == config.email.emailTypes.ieltsFeedback.type) {
+
           dataForEmailType = await getDataForIeltsEmailType(emailTypesMap[emailType]);
+
         }
+
         if (dataForEmailType) {
 
-          let emailPromisesForType = dataForEmailType.map((data) => {
+          let emailPromisesACategory = dataForEmailType.map((data, index) => {
             return new Promise(async (resolve, reject) => {
               try {
-                data["emailTemplateId"] = `dls-${config.dls.realm}-${config.dls.env}-${config.email.emailTypes[emailType].templateId}`
-                //TODO: remove this temp change;
-                let res = await EmailService.sendTemplateEmailPromise(data)
+
+                if (!data.status) {
+
+                  throw new CustomEmailError(ApplicationErrors.RECORD_DATA_FETCHING_ERROR, null, null);
+
+                }
+
+                EmailService.validate(data);
+
+                if (!config.email.emailTypes[emailType] || !config.email.emailTypes[emailType].templateId) {
+                  throw new CustomEmailError(ApplicationErrors.EMAIL_TEMPLATE_NOT_FOUND, null, null);
+                }
+
+                data["emailTemplateId"] = `dls-${config.dls.realm}-${config.dls.env}-${config.email.emailTypes[emailType].templateId}`;
+
+                const recordLogger = Logger.getRecordLogger(messageId);
+
+                recordLogger.info('Sending email for record.');
+
+                let res = await EmailService.sendTemplateEmailPromise(data);
+
+                recordLogger.info('Email sent for record');
+
                 resolve(res)
-              } catch (err) {
-                reject(err);
+              } catch (e) {
+
+                CommonUtil.handleError(e, emailTypesMap[emailType][index], { isRecordLevel: true, isFurtherComputationsNeeded: true });
+
+                reject(e);
               }
             });
 
           });
 
-          const emailPromisesForATypeData = await Promise.allSettled(emailPromisesForType);
+          const emailPromisesACategoryData = await Promise.allSettled(emailPromisesACategory);
 
-          const fulfilledMessages = emailTypesMap[emailType].filter((_f, index) => emailPromisesForATypeData[index].status === 'fulfilled');
+          const fulfilledMessages = emailTypesMap[emailType].filter((_f, index) => emailPromisesACategoryData[index].status === 'fulfilled');
 
           sucessfullyProcessedMessageIds = sucessfullyProcessedMessageIds.concat(fulfilledMessages.map(message => message.messageId));
 
-          resolve(emailPromisesForATypeData)
+          resolve(emailPromisesACategoryData)
 
         } else {
-          reject("No method implemented to fetch email data for" + emailType + "category")
+          logger.info("No method implemented to fetch email data for" + emailType + "category");
+          reject()
         }
 
       })
 
-      sendEmailPromisesForAllTypes.push(emailPromise)
+      EmailPromisesForAllTypes.push(emailPromise);
 
     }
-    const sendEmailPromisesForAllTyoesData = await Promise.allSettled(sendEmailPromisesForAllTypes);
 
-    console.log(sendEmailPromisesForAllTyoesData)
+    await Promise.allSettled(EmailPromisesForAllTypes);
 
-    // const isAnyMsgFailed = sendEmailPromisesData.some((msgPromise) => msgPromise.status === 'rejected');
-    const isAnyMsgFailed = event.Records.length != sucessfullyProcessedMessageIds.length;
+    const failedRecords = event.Records.filter((record) => {
+      return !sucessfullyProcessedMessageIds.includes(record.messageId);
+    });
 
-    if (isAnyMsgFailed) {
-      // TODO: delete successfully processed messages;
+    if (failedRecords.length) {
+
       const successfullyProcessedRecords = event.Records.filter((record) => {
         return sucessfullyProcessedMessageIds.includes(record.messageId);
-      })
-      const failedRecords = event.Records.filter((record) => {
-        return !sucessfullyProcessedMessageIds.includes(record.messageId);
-      })
-      return await CommonUtil.handleBatchFailure(successfullyProcessedRecords,failedRecords);
+      });
+
+      return await CommonUtil.handleBatchFailure(successfullyProcessedRecords, failedRecords);
     }
-    
+
     const retMessage = `Successfully processed '${event.Records.length}' records.`;
 
     logger.info(retMessage);

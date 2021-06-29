@@ -1,10 +1,15 @@
 const request = require('request').defaults({ strictSSL: false });
 const config = require("../../../config/default.config");
-
+const EmailService = require("../../../services/email-service");
 const comproDlsSdk = require('comprodls-sdk');
+const {Logger} = require('../../../utilities/logger.util');
+
+const CommonUtil = require('../../../utilities/common.util');
+
 async function getData(messages) {
     // Assumption: origId will not change or ieltsFeedback Email messages;
     const { org } = messages[0];
+
     const options = {
         orgid: org,
     };
@@ -21,32 +26,43 @@ async function getData(messages) {
 
     const usersData = emailData[0];
 
+
     const productsData = emailData[1];
 
-    return messages.map((message) => {
-        let userData = usersData.filter((data) => {
-            return data.value.userId == message["extStudentId"];
-        })[0].value;
+    return messages.map((message , index) => {
+        let data = EmailService.getEmailDataObj();
+        try {
 
-        let productData = productsData.filter((data) => {
-            return data.value.productcode == message.productcode;
-        })[0].value;
+            let userData = usersData.filter((data) => {
+                return data.value.userId == message["extStudentId"];
+            })[0].value;
 
-        let testName = productData.tests.filter((test) => {
-            return test["item-code"] == message.entity["item-code"];
-        })[0].name;
+            let productData = productsData.filter((data) => {
+                return data.value.productcode == message.productcode;
+            })[0].value;
 
-        const { email, first_name, last_name } = userData["user"];
-        return {
-            emailParams: {
+            let testName = productData.tests.filter((test) => {
+                return test["item-code"] == message.entity["item-code"];
+            })[0].name;
 
+            const { email, first_name, last_name } = userData["user"];
+            data.status = true;
+            data.emailParams = {
                 testName: testName,
                 firstName: first_name,
                 lastName: last_name,
                 subject: `${first_name}, your ${testName} feedback is ready`,
-            },
-            receiverEmail: email,
-        };
+            };
+            data.receiverEmail = email;
+        } catch(err) {
+            
+            CommonUtil.handleError(err , message, { isRecordLevel: true, isFurtherComputationsNeeded: true });
+
+            data.status = false;
+        }
+
+        return data;
+
     })
 
 }
@@ -76,6 +92,15 @@ async function getUsersData(users, comproDLS, orgId) {
         })
 
         const usersData = await Promise.allSettled(getUserDataPromises);
+
+        const userDataFailedMessages = usersData.forEach((msgPromise, index) => {
+            if (msgPromise.status === 'rejected') {
+                const logger = Logger.getLogger();
+                logger.error("Error fetching data for user-id: " + users[index] + " ErrorDetails: " + JSON.stringify(msgPromise.reason));
+            }
+        }
+        );
+
 
         resolve(usersData);
 
@@ -115,6 +140,14 @@ async function getProductsData(products, comproDLS) {
         })
 
         const getProductsData = await Promise.allSettled(productsDataPromises);
+
+        getProductsData.forEach((msgPromise, index) => {
+            if (msgPromise.status === 'rejected') {
+                const logger = Logger.getLogger();
+                logger.error("Error fetching data for product: " + products[index] + " ErrorDetails: " + JSON.stringify(msgPromise.reason))
+            }
+        }
+        );
 
         resolve(getProductsData);
 

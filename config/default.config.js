@@ -1,5 +1,4 @@
 const config = {
-  // TODO : Check correct values for realm
   dls: {
     env: process.env.DLS_ENV || "thor",
     realm: process.env.DLS_REALM || "asgard",
