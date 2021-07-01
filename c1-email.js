@@ -19,10 +19,7 @@ const main = async (event, context) => {
       const bodyObj = JSON.parse(record.body);
       const msgObj = JSON.parse(bodyObj.Message);
       msgObj["messageId"] = record.messageId;
-      // msgObj["ApproximateReceiveCount"] = record["attributes"]["ApproximateReceiveCount"]
       Logger.initRecordLogger(context, record, bodyObj);
-
-
       return msgObj;
 
     });
@@ -31,10 +28,9 @@ const main = async (event, context) => {
     // step1: seggregateRecordsByEmailType
     const { emailTypesMap, noCategoryMessageIds } = EmailService.seggregateRecordsByEmailType(messageArray);
 
-    Logger.info("following messageIds do not belong to any category " + JSON.stringify(noCategoryMessageIds));
+    logger.info("Following messageIds do not belong to any category " + JSON.stringify(noCategoryMessageIds));
 
     sucessfullyProcessedMessageIds = sucessfullyProcessedMessageIds.concat(noCategoryMessageIds);
-
 
     const EmailPromisesForAllTypes = [];
 
@@ -45,6 +41,7 @@ const main = async (event, context) => {
         logger.info(`Processing data for '${emailType}' type.`);
 
         let dataForEmailType;
+        // step2: get data for each email type
         // Use switch case when new types are added.
         // ADD_NEW_EMAIL: introduce handling for any new email type to be added;
         if (emailType == config.email.emailTypes.ieltsFeedback.type) {
@@ -67,8 +64,10 @@ const main = async (event, context) => {
 
                 EmailService.validate(data);
 
-                if (!config.email.emailTypes[emailType] || !config.email.emailTypes[emailType].templateId) {
+                if (!(config.email.emailTypes[emailType] && config.email.emailTypes[emailType].templateId)) {
+
                   throw new CustomEmailError(ApplicationErrors.EMAIL_TEMPLATE_NOT_FOUND, null, null);
+
                 }
 
                 data["emailTemplateId"] = `dls-${config.dls.realm}-${config.dls.env}-${config.email.emailTypes[emailType].templateId}`;
@@ -76,12 +75,13 @@ const main = async (event, context) => {
                 const recordLogger = Logger.getRecordLogger(messageId);
 
                 recordLogger.info('Sending email for record.');
-
+                // step3: send email for each category records;
                 let res = await EmailService.sendTemplateEmailPromise(data);
 
                 recordLogger.info('Email sent for record');
 
-                resolve(res)
+                resolve(res);
+
               } catch (e) {
 
                 CommonUtil.handleError(e, emailTypesMap[emailType][index], { isRecordLevel: true, isFurtherComputationsNeeded: true });
@@ -92,17 +92,19 @@ const main = async (event, context) => {
 
           });
 
-          const emailPromisesACategoryData = await Promise.allSettled(emailPromisesACategory);
+          const emailPromisesForACategoryData = await Promise.allSettled(emailPromisesACategory);
 
-          const fulfilledMessages = emailTypesMap[emailType].filter((_f, index) => emailPromisesACategoryData[index].status === 'fulfilled');
+          const fulfilledMessages = emailTypesMap[emailType].filter((_f, index) => emailPromisesForACategoryData[index].status === 'fulfilled');
 
           sucessfullyProcessedMessageIds = sucessfullyProcessedMessageIds.concat(fulfilledMessages.map(message => message.messageId));
 
-          resolve(emailPromisesACategoryData)
+          resolve(emailPromisesForACategoryData);
 
         } else {
+
           logger.info("No method implemented to fetch email data for" + emailType + "category");
-          reject()
+
+          reject();
         }
 
       })
@@ -122,8 +124,9 @@ const main = async (event, context) => {
       const successfullyProcessedRecords = event.Records.filter((record) => {
         return sucessfullyProcessedMessageIds.includes(record.messageId);
       });
-
+      // step4: delete suce\cessfully processed records in case not all are processed successfully.
       return await CommonUtil.handleBatchFailure(successfullyProcessedRecords, failedRecords);
+
     }
 
     const retMessage = `Successfully processed '${event.Records.length}' records.`;

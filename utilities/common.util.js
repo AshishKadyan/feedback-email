@@ -23,7 +23,7 @@ class CommonUtil {
   */
   static async handleBatchFailure(recordsToDelete, failedMessageIds) {
 
-    const sucessMessageIds = [];
+    const sucessfullyDeletedMessageIds = [];
 
     const entriesToDelete = recordsToDelete.map((messageToDelete) => {
       Logger.getRecordLogger(messageToDelete.messageId).info('Started deleting record.');
@@ -40,7 +40,7 @@ class CommonUtil {
       }).promise();
 
       deleteMsgRes.Successful.forEach((record) => {
-        sucessMessageIds.push(record.Id);
+        sucessfullyDeletedMessageIds.push(record.Id);
         Logger.getRecordLogger(record.Id).info('Successfully deleted record from queue.');
       });
 
@@ -48,13 +48,15 @@ class CommonUtil {
         failedMessageIds.push(record.Id);
         Logger.getRecordLogger(record.Id).info('Failed to delete record from queue.');
       });
+
+
     }
 
 
     // need to throw here so that the all the batch does not vanish from SQS.
     throw new CustomEmailError(ApplicationErrors.BATCH_PROCESSING_FAILED, null, {
       info: {
-        SuccessfulMessageIds: sucessMessageIds,
+        SuccessfulMessageIds: sucessfullyDeletedMessageIds,
         FailedMessageIds: failedMessageIds
       }
     });

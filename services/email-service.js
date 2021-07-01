@@ -9,7 +9,7 @@ const emailClient = new AWS.SES();
 class EmailService {
 
     static emailData = {
-        dataFetchedSuceessfull: null,
+        status: null,
         emailParams: {
         },
         receiverEmail: null

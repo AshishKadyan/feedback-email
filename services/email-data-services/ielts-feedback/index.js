@@ -2,7 +2,7 @@ const request = require('request').defaults({ strictSSL: false });
 const config = require("../../../config/default.config");
 const EmailService = require("../../../services/email-service");
 const comproDlsSdk = require('comprodls-sdk');
-const {Logger} = require('../../../utilities/logger.util');
+const { Logger } = require('../../../utilities/logger.util');
 
 const CommonUtil = require('../../../utilities/common.util');
 
@@ -15,13 +15,13 @@ async function getData(messages) {
     };
 
     const comproDLS = comproDlsSdk.init(config.dls.env, config.dls.realm, options);
-
+    // filter out unique products
     const uniqueProducts = messages.map(item => item.productcode)
         .filter((value, index, self) => self.indexOf(value) === index);
-
+    // filter out unique users
     const uniqueUsers = messages.map(item => item.extStudentId)
         .filter((value, index, self) => self.indexOf(value) === index);
-
+    // get data for unique users and products
     const emailData = await Promise.all([getUsersData(uniqueUsers, comproDLS, org), getProductsData(uniqueProducts, comproDLS)]);
 
     const usersData = emailData[0];
@@ -29,7 +29,7 @@ async function getData(messages) {
 
     const productsData = emailData[1];
 
-    return messages.map((message , index) => {
+    return messages.map((message, index) => {
         let data = EmailService.getEmailDataObj();
         try {
 
@@ -54,9 +54,9 @@ async function getData(messages) {
                 subject: `${first_name}, your ${testName} feedback is ready`,
             };
             data.receiverEmail = email;
-        } catch(err) {
-            
-            CommonUtil.handleError(err , message, { isRecordLevel: true, isFurtherComputationsNeeded: true });
+        } catch (err) {
+
+            CommonUtil.handleError(err, message, { isRecordLevel: true, isFurtherComputationsNeeded: true });
 
             data.status = false;
         }
@@ -92,7 +92,7 @@ async function getUsersData(users, comproDLS, orgId) {
         })
 
         const usersData = await Promise.allSettled(getUserDataPromises);
-
+        // In case of any failed requests, log it
         const userDataFailedMessages = usersData.forEach((msgPromise, index) => {
             if (msgPromise.status === 'rejected') {
                 const logger = Logger.getLogger();
@@ -140,7 +140,7 @@ async function getProductsData(products, comproDLS) {
         })
 
         const getProductsData = await Promise.allSettled(productsDataPromises);
-
+        // In case of any failed requests, log it
         getProductsData.forEach((msgPromise, index) => {
             if (msgPromise.status === 'rejected') {
                 const logger = Logger.getLogger();
