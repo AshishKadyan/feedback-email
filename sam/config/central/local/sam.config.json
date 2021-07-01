@@ -1,0 +1,11 @@
+{
+  "app": "ges",
+  "region": "us-west-2",
+  "sam_s3": {
+    "bucket_name": "cup-central-local-milyr",
+    "bucket_prefix": "sam-ges"
+  },
+  "parameters": {
+    "SNSTopicARN": "arn:aws:sns:us-west-2:567434252311:dls-asgard-thor-s-events-bridge-EventFanOutSNSTopic"
+  }
+}

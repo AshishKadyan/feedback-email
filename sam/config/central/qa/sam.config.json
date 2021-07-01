@@ -1,0 +1,19 @@
+{
+  "app": "milyr",
+  "region": "us-west-2",
+  "sam_s3": {
+    "bucket_name": "cup-central-build-artifacts",
+    "bucket_prefix": "sam-milyr"
+  },
+  "parameters": {
+    "ToolId": "metrica-qa",
+    "DefaultExecutionStartTime": "2020-07-01T00:00:01",
+    "MaxStartTimeOffset": "1209600000",
+    "MetricaClientId": "AhKR4KeCb2qmdoCDrfAjCgUD3QP4UPg1",
+    "MetricaEndpoint": "https://sandbox-api.cambridgeassessment.org.uk/qa2-metrica/v1/",
+    "DropBucket": "dls-cup-qa-bldrimp-builder-drop-bucket",
+    "DropBucketFolder": "external-tools/metrica-qa/",
+    "LoginEndpoint": "https://sandbox-api.cambridgeassessment.org.uk/v1/cambridge.id/token",
+    "ReadStartTimeFromConfig": "false"
+  }
+}

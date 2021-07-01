@@ -1,0 +1,23 @@
+version: 0.2
+env:
+  variables:
+    Group: "Value passed by codebuild"
+    Environment: "Value passed by codebuild"
+    KMSKeyID: "Value passed by codebuild"
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - python -V
+      - apt-get -y install curl
+      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+      - apt-get -q update
+      - apt-get -q -y install jq
+      - jq --version
+      - pip -q install awscli
+      - pip -q install aws-sam-cli
+  build:
+    commands:
+      - bash ./aws_sam.sh build $Group $Environment "" $KMSKeyID
+      - bash ./aws_sam.sh deploy $Group $Environment "" $KMSKeyID

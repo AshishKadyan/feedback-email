@@ -1,0 +1,17 @@
+{
+  "app": "milyr",
+  "region": "us-west-2",
+  "sam_s3": {
+    "bucket_name": "cup-central-build-artifacts",
+    "bucket_prefix": "sam-milyr"
+  },
+  "parameters": {
+    "ToolId": "metrica-sup",
+    "DefaultExecutionStartTime": "2020-11-01T00:00:01",
+    "MaxStartTimeOffset": "1209600000",
+    "MetricaClientId": "370SDXVdaieABhJPnjW2J0ksbOleFJRU",
+    "MetricaEndpoint": "https://sandbox-api.cambridgeassessment.org.uk/sup-metrica/v1/",
+    "LoginEndpoint": "https://sandbox-api.cambridgeassessment.org.uk/v1/cambridge.id/token",
+    "ReadStartTimeFromConfig": "false"
+  }
+}

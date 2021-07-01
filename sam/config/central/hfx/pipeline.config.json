@@ -1,0 +1,13 @@
+{
+  "region": "us-west-2",
+  "stack": "cup-central-hfx-milyr-cf",
+  "parameters": {
+    "PipelineProjectName": "cup-central-hfx-milyr-cp",
+    "CodeBuildProjectName": "cup-central-hfx-milyr-cb",
+    "ArtifactS3BucketName": "cup-central-build-artifacts",
+    "GithubUser": "compro-cup-central",
+    "GithubRepo": "sam-metrica-ilayer",
+    "GithubBranch": "env/hfx",
+    "KMSKeyID": "CHANGE_ME"
+  }
+}

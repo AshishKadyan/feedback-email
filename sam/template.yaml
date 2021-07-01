@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: CUP AWS Serverless Arch. for Email
+
+Parameters:
+  KMSKeyID:
+    Type: String
+    NoEcho: true
+    Default: CHANGE_ME
+
+  SNSTopicARN:
+    Type: String
+
+Resources:
+  DeadLetterQueueForSubscription:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Join ["-", [!Ref AWS::StackName, deadLetterQueueForSubscription]]
+      DelaySeconds: 0
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600 #14 days in seconds
+        
+  IELTSubscription:
+    Type: "AWS::SNS::Subscription"
+    DependsOn: [DeadLetterQueueForSubscription]
+    Properties:
+      TopicArn: !Ref SNSTopicARN
+      Endpoint: !GetAtt QueueForFilter.Arn
+      Protocol: "sqs"
+      RawMessageDelivery: "true"
+      FilterPolicy: 
+        bundle-codes:
+          - ielts_bundle
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueueForSubscription.Arn
+
+  DeadLetterQueueForFilter:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Join ["-", [!Ref AWS::StackName, deadLetterQueueForFilter]]
+      DelaySeconds: 0
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600 #14 days in seconds
+
+  QueueForFilter:
+    Type: AWS::SQS::Queue
+    DependsOn: [DeadLetterQueueForFilter]
+    Properties:
+      QueueName: !Join ["-", [!Ref AWS::StackName, queueForFilter]]
+      VisibilityTimeout: 180
+      ReceiveMessageWaitTimeSeconds: 20 #20 is the max value, for long polling
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueueForFilter.Arn
+        maxReceiveCount: 5
+
+  SendEmailFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Join ["-", [!Ref AWS::StackName, SendEmailFunction]]
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: functions/send-email
+      Description: Function Triggered on new entry in QueueForFilter
+      MemorySize: 512
+      Timeout: 90
+      Role: !GetAtt SendEmailRole.Arn
+      KmsKeyArn: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${KMSKeyID}"
+      Events:
+        QueueForFilterEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt QueueForFilter.Arn
+            BatchSize: 10
+
+  SendEmailRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+      Policies:
+        - PolicyName: S3Crud
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:GetObjectVersion
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:GetLifecycleConfiguration
+                  - s3:PutLifecycleConfiguration
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub "arn:aws:s3:::${LogExecutionS3Bucket}"
+                  - !Sub "arn:aws:s3:::${LogExecutionS3Bucket}/*"
+        - PolicyName: SQSSendReceive
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:GetQueueAttributes
+                  - sqs:SendMessage*
+                Resource:
+                  - !GetAtt QueueForFilter.Arn
+        - PolicyName: KMSAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:GenerateDataKey
+                  - kms:Decrypt
+                  - kms:Encrypt
+                Resource:
+                  - !Sub "arn:aws:kms:*:*:key/${KMSKeyID}"
+
+
+Outputs:
+  QueueForFilter:
+    Description: "Queue for applying filter on SNS"
+    Value: !Ref QueueForFilter
+  SendEmailFunction:
+    Description: "Triggered on new entry in QueueForFilter Lambda Function ARN"
+    Value: !GetAtt SendEmailFunction.Arn
+  IELTSubscription:
+    Description: "Triggered on new entry in QueueForFilter Lambda Function ARN"
+    Value: !GetAtt SendEmailFunction.Arn
+  SendEmailRole:
+    Description: "Role for SendEmail Lambda Execution ARN"
+    Value: !GetAtt SendEmailRole.Arn

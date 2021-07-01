@@ -1,0 +1,289 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CI/CD Pipeline for Metrica Integration Layer"
+Parameters:
+  PipelineProjectName:
+    Default: cup-central-local-milyr-pipeline
+    Description: "Project name for code pipeline"
+    Type: String
+  CodeBuildProjectName:
+    Default: cup-central-local-milyr-build
+    Description: "Project name for code build"
+    Type: String
+  ArtifactS3BucketName:
+    Default: cup-central-milyr-sam
+    Description: "S3 bucket for code pipeline"
+    Type: String
+  Group:
+    Default: central
+    Description: "Env Group of target sam stack"
+    Type: String
+  Environment:
+    Default: local
+    Description: "Env for target sam stack"
+    Type: String
+  GithubUser:
+    Default: compro-cup-central
+    Description: "Github user where the repository lives"
+    Type: String
+  GithubRepo:
+    Default: sam-milyr
+    Description: "Gitub Repository name"
+    Type: String
+  GithubBranch:
+    Default: master
+    Description: "Gitub Branch name"
+    Type: String
+  GithubToken: 
+    Default: invalid_token
+    Description: "Github OAuth Token with full permissions on admin:repo_hook and repo"
+    NoEcho: true
+    Type: String
+  KMSKeyID:
+    Type: String
+    NoEcho: true
+    Default: CHANGE_ME
+Resources:
+
+  CodeBuildProject:
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      Name: !Ref CodeBuildProjectName
+      Description: "Build project for sam-milyr"
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      TimeoutInMinutes: 10
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yaml
+      Artifacts:
+        Type: CODEPIPELINE
+      Cache:
+        Type: S3
+        Location: !Sub ${ArtifactS3BucketName}/sam-milyr/codebuild-cache
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/standard:4.0
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: Group
+            Value: !Ref Group
+          - Name: Environment
+            Value: !Ref Environment
+          - Name: KMSKeyID
+            Value: !Ref KMSKeyID
+
+  Pipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      Name: !Ref PipelineProjectName
+      RoleArn: !GetAtt CodePipelineExecutionRole.Arn
+      ArtifactStore:
+        Location: !Ref ArtifactS3BucketName
+        Type: S3
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: SourceCodeRepo
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: "1"
+              Configuration:
+                Branch: !Ref GithubBranch
+                OAuthToken: !Ref GithubToken
+                Owner: !Ref GithubUser
+                Repo: !Ref GithubRepo
+                PollForSourceChanges: false
+              OutputArtifacts:
+                - Name: SourceCodeAsZip
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: CodeBuild
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              InputArtifacts:
+                - Name: SourceCodeAsZip
+              OutputArtifacts:
+                - Name: BuildArtifactAsZip
+      DisableInboundStageTransitions:
+        - Reason: Manual approval required
+          StageName: Build
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+      Path: /
+      Policies:
+        - PolicyName: CodeBuildLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildProjectName}"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildProjectName}:*"
+        - PolicyName: CodeBuildArtifactsBucket
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                  - s3:GetObjectVersion
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:GetLifecycleConfiguration
+                  - s3:PutLifecycleConfiguration
+                  - s3:DeleteObject
+                  - s3:GetObjectTagging
+                  - s3:PutObjectTagging
+                  - s3:DeleteObjectTagging
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactS3BucketName}/*"
+        - PolicyName: SAMPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: DeployCloudformation
+                Effect: Allow
+                Action: cloudformation:*
+                Resource:
+                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-milyr*
+                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-milyr*/*
+                  - !Sub arn:aws:cloudformation:*:*:stackset/cup-${Group}-${Environment}-milyr*:*
+              - Sid: AllResource
+                Effect: Allow
+                Action:
+                  - cloudformation:*ChangeSet
+                  - iam:List*
+                  - events:*
+                Resource: "*"
+              - Sid: DeployIAMsLambda
+                Effect: Allow
+                Action:
+                  - iam:*Role
+                  - iam:*Policy
+                Resource:
+                  - !Sub arn:aws:iam::*:role/cup-${Group}-${Environment}-milyr*
+                  - !Sub arn:aws:iam::*:policy/cup-${Group}-${Environment}-milyr*
+                  - arn:aws:iam::*:user/*
+                  - arn:aws:iam::*:group/*
+              - Sid: AppBucket
+                Effect: Allow
+                Action:
+                  - s3:*
+                Resource:
+                  - !Sub arn:aws:s3:::cup-${Group}-${Environment}-milyr*
+                  - !Sub arn:aws:s3:::cup-${Group}-${Environment}-milyr*/*
+              - Sid: LambdaPermissions
+                Effect: Allow
+                Action: lambda:*
+                Resource:
+                  - !Sub arn:aws:lambda:*:*:function:cup-${Group}-${Environment}-milyr*
+                  - !Sub arn:aws:lambda:*:*:layer:cup-${Group}-${Environment}-milyr*
+              - Sid: LambdaEventSourcePermissions
+                Effect: Allow
+                Action:
+                  - lambda:DeleteEventSourceMapping
+                  - lambda:UpdateEventSourceMapping
+                  - lambda:CreateEventSourceMapping
+                  - lambda:GetEventSourceMapping
+                  - lambda:ListEventSourceMappings
+                Resource: "*"
+              - Sid: SQSAllow
+                Effect: Allow
+                Action:
+                  - sqs:*
+                Resource:
+                  - !Sub arn:aws:sqs:*:*:cup-${Group}-${Environment}-milyr*
+              - Sid: SSMAllow
+                Effect: Allow
+                Action:
+                  - ssm:GetParameter*
+                  - ssm:DescribeParameters
+                Resource:
+                  - !Sub arn:aws:ssm:*:*:parameter/${Group}/${Environment}/MILYR*
+              - Sid: KMSAccess
+                Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:GenerateDataKey
+                  - kms:Decrypt
+                  - kms:Encrypt
+                  - kms:CreateGrant
+                Resource:
+                  - !Sub "arn:aws:kms:*:*:key/${KMSKeyID}"
+              
+
+  CodePipelineExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+      Path: /
+      Policies:
+        - PolicyName: CodePipelineCodeAndArtifactsS3Bucket
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "s3:*"
+                Resource: !Sub "arn:aws:s3:::${ArtifactS3BucketName}/*"
+        - PolicyName: CodePipelineCodeBuildAndCloudformationAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "codebuild:StartBuild"
+                  - "codebuild:BatchGetBuilds"
+                Resource:
+                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuildProject}"
+Outputs:
+  BuildArtifactS3Bucket:
+    Description: "Amazon S3 Bucket for Pipeline and Build artifacts"
+    Value: !Ref ArtifactS3BucketName
+  CodeBuildIAMRole:
+    Description: "CodeBuild IAM Role"
+    Value: !GetAtt CodeBuildServiceRole.Arn
+  CodeBuildProject:
+    Description: "CodeBuild Project name"
+    Value: !Ref CodeBuildProject
+  CodePipeline:
+    Description: "AWS CodePipeline pipeline name"
+    Value: !Ref Pipeline
+  CodePipelineIAMRole:
+    Description: "CodePipeline IAM Role"
+    Value: !GetAtt CodePipelineExecutionRole.Arn
+
+
+

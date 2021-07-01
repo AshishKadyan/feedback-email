@@ -1,0 +1,13 @@
+{
+  "region": "us-west-2",
+  "stack": "cup-central-dev-milyr-cf",
+  "parameters": {
+    "PipelineProjectName": "cup-central-dev-milyr-cp",
+    "CodeBuildProjectName": "cup-central-dev-milyr-cb",
+    "ArtifactS3BucketName": "dls-asgard-thor-cf-lambda-code",
+    "GithubUser": "compro-cup-central",
+    "GithubRepo": "sam-metrica-ilayer",
+    "GithubBranch": "env/dev",
+    "KMSKeyID": "CHANGE_ME"
+  }
+}

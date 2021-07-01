@@ -1,0 +1,13 @@
+{
+  "region": "us-west-2",
+  "stack": "cup-central-prod1-milyr-cf",
+  "parameters": {
+    "PipelineProjectName": "cup-central-prod1-milyr-cp",
+    "CodeBuildProjectName": "cup-central-prod1-milyr-cb",
+    "ArtifactS3BucketName": "cup-central-prod1-build-artifacts",
+    "GithubUser": "compro-cup-central",
+    "GithubRepo": "sam-metrica-ilayer",
+    "GithubBranch": "master",
+    "KMSKeyID": "CHANGE_ME"
+  }
+}
