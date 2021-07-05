@@ -4,7 +4,7 @@ const config = {
     realm: process.env.DLS_REALM || "asgard",
     accountId: process.env.ACCOUNT_ID || "cup1"
   },
-  scoreQueueUrl: process.env.SCORE_Q_URL,
+  emailQueueUrl: process.env.EMAIL_Q_URL, // from template.yaml
   Logger: {
     bunyan: {
       name: process.env.BUNYAN_LOG_NAME || 'send-c1-emails-worker',

@@ -79,6 +79,9 @@ const message2 = JSON.stringify({
 const event1 = {
   "Records": [
     {
+      "attributes": {
+        "ApproximateReceiveCount": 1
+      },
       "messageId": "sample-message-id",
       "EventSource": "aws:sns",
       "EventVersion": "1.0",
@@ -89,34 +92,6 @@ const event1 = {
         "TopicArn": "arn:aws:sns:us-west-2:123456789012:ExampleTopic",
         "Subject": "example subject",
         "Message": message,
-        "Timestamp": "2020-01-01T00:00:00.000Z",
-        "SignatureVersion": "1",
-        "Signature": "EXAMPLE",
-        "SigningCertUrl": "EXAMPLE",
-        "UnsubscribeUrl": "EXAMPLE",
-        "MessageAttributes": {
-          "Test": {
-            "Type": "String",
-            "Value": "TestString"
-          },
-          "TestBinary": {
-            "Type": "Binary",
-            "Value": "TestBinary"
-          }
-        }
-      })
-    },
-    {
-      "messageId": "sample-message-id2",
-      "EventSource": "aws:sns",
-      "EventVersion": "1.0",
-      "EventSubscriptionArn": "arn:aws:sns:us-west-2:{{{accountId}}}:ExampleTopic",
-      "body": JSON.stringify({
-        "Type": "Notification",
-        "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
-        "TopicArn": "arn:aws:sns:us-west-2:123456789012:ExampleTopic",
-        "Subject": "example subject",
-        "Message": message2,
         "Timestamp": "2020-01-01T00:00:00.000Z",
         "SignatureVersion": "1",
         "Signature": "EXAMPLE",

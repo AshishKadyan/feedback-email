@@ -36,7 +36,7 @@ class CommonUtil {
     if (entriesToDelete.length) {
       const deleteMsgRes = await sqs.deleteMessageBatch({
         Entries: entriesToDelete,
-        QueueUrl: config.scoreQueueUrl
+        QueueUrl: config.emailQueueUrl
       }).promise();
 
       deleteMsgRes.Successful.forEach((record) => {
