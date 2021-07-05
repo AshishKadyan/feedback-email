@@ -75,8 +75,12 @@ exports.handler = async (event, context) => {
                     const recordLogger = Logger.getRecordLogger(messageId);
     
                     recordLogger.info('Sending email for record.');
+                    
+                    logger.info("data",data);
                     // step3: send email for each category records;
-                    let res = await EmailService.sendTemplateEmailPromise(data);
+                    let res;
+                    
+                    // res = await EmailService.sendTemplateEmailPromise(data);
     
                     recordLogger.info('Email sent for record');
     
