@@ -7,10 +7,10 @@
   },
   "parameters": {
     "SNSTopicARN": "arn:aws:sns:us-west-2:567434252311:dls-asgard-thor-s-events-bridge-EventFanOutSNSTopic",
-    "DLS_ACCOUNT_ID" : "cup1",
-    "STATIC_ASSETS_BASEPATH" : "",
-    "APPS_BASEPATH" :"",
-    "FROM_EMAIL_ADDRESS" : "",
-    "IELTS_BUNDLE_CODE" : "ielts_bundle"
+    "DlsAccountId": "cup1",
+    "StaticAssetsBasepath": "StaticAssetsBasepath",
+    "AppsBasepath": "AppsBasepath",
+    "FromEmailAddress": "FromEmailAddress",
+    "IeltsBundleCode": "ielts_bundle"
   }
 }

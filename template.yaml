@@ -12,19 +12,19 @@ Parameters:
   SNSTopicARN:
     Type: String
 
-  DLS_ACCOUNT_ID:
+  DlsAccountId:
     Type: String
   
-  STATIC_ASSETS_BASEPATH:
+  StaticAssetsBasepath:
     Type: String
 
-  APPS_BASEPATH:
+  AppsBasepath:
     Type: String
   
-  FROM_EMAIL_ADDRESS:
+  FromEmailAddress:
     Type: String
 
-  IELTS_BUNDLE_CODE:
+  IeltsBundleCode:
     Type: String
   
 Resources:
@@ -46,7 +46,7 @@ Resources:
       RawMessageDelivery: "true"
       FilterPolicy: 
         bundle-codes:
-          - !Ref IELTS_BUNDLE_CODE
+          - !Ref IeltsBundleCode
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt DeadLetterQueueForSubscription.Arn
 
@@ -83,11 +83,11 @@ Resources:
       Environment:
         Variables:
           EMAIL_Q_URL: !Ref QueueForFeedbackEmail.Arn
-          ACCOUNT_ID: !Ref DLS_ACCOUNT_ID
-          STATIC_ASSETS_BASEPATH: !Ref STATIC_ASSETS_BASEPATH
-          APPS_BASEPATH: !Ref APPS_BASEPATH
-          EMAIL_ADDRESS_GENERAL: !Ref FROM_EMAIL_ADDRESS
-          IELTS_BUNDLE_CODE: !Ref IELTS_BUNDLE_CODE
+          ACCOUNT_ID: !Ref DlsAccountId
+          STATIC_ASSETS_BASEPATH: !Ref StaticAssetsBasepath
+          APPS_BASEPATH: !Ref AppsBasepath
+          EMAIL_ADDRESS_GENERAL: !Ref FromEmailAddress
+          IELTS_BUNDLE_CODE: !Ref IeltsBundleCode
       KmsKeyArn: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${KMSKeyID}"
       Events:
         QueueForFeedbackEmailEvent:
