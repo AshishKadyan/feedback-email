@@ -12,6 +12,21 @@ Parameters:
   SNSTopicARN:
     Type: String
 
+  DLS_ACCOUNT_ID:
+    Type: String
+  
+  STATIC_ASSETS_BASEPATH:
+    Type: String
+
+  APPS_BASEPATH:
+    Type: String
+  
+  FROM_EMAIL_ADDRESS:
+    Type: String
+
+  IELTS_BUNDLE_CODE:
+    Type: String
+  
 Resources:
   DeadLetterQueueForSubscription:
     Type: "AWS::SQS::Queue"
@@ -26,32 +41,32 @@ Resources:
     DependsOn: [DeadLetterQueueForSubscription]
     Properties:
       TopicArn: !Ref SNSTopicARN
-      Endpoint: !GetAtt QueueForFilter.Arn
+      Endpoint: !GetAtt QueueForFeedbackEmail.Arn
       Protocol: "sqs"
       RawMessageDelivery: "true"
       FilterPolicy: 
         bundle-codes:
-          - ielts_bundle
+          - !Ref IELTS_BUNDLE_CODE
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt DeadLetterQueueForSubscription.Arn
 
-  DeadLetterQueueForFilter:
+  DeadLetterQueueForFeedbackEmail:
     Type: "AWS::SQS::Queue"
     Properties:
-      QueueName: !Join ["-", [!Ref AWS::StackName, deadLetterQueueForFilter]]
+      QueueName: !Join ["-", [!Ref AWS::StackName, deadLetterQueueForFeedbackEmail]]
       DelaySeconds: 0
       VisibilityTimeout: 300
       MessageRetentionPeriod: 1209600 #14 days in seconds
 
-  QueueForFilter:
+  QueueForFeedbackEmail:
     Type: AWS::SQS::Queue
-    DependsOn: [DeadLetterQueueForFilter]
+    DependsOn: [DeadLetterQueueForFeedbackEmail]
     Properties:
-      QueueName: !Join ["-", [!Ref AWS::StackName, queueForFilter]]
+      QueueName: !Join ["-", [!Ref AWS::StackName, queueForFeedbackEmail]]
       VisibilityTimeout: 180
       ReceiveMessageWaitTimeSeconds: 20 #20 is the max value, for long polling
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueueForFilter.Arn
+        deadLetterTargetArn: !GetAtt DeadLetterQueueForFeedbackEmail.Arn
         maxReceiveCount: 5
 
   SendEmailFunction:
@@ -61,16 +76,24 @@ Resources:
       Handler: index.handler
       Runtime: nodejs14.x
       CodeUri: functions/send-email
-      Description: Function Triggered on new entry in QueueForFilter
+      Description: Function Triggered on new entry in QueueForFeedbackEmail
       MemorySize: 512
       Timeout: 90
       Role: !GetAtt SendEmailRole.Arn
+      Environment:
+        Variables:
+          EMAIL_Q_URL: !Ref QueueForFeedbackEmail.Arn
+          ACCOUNT_ID: !Ref DLS_ACCOUNT_ID
+          STATIC_ASSETS_BASEPATH: !Ref STATIC_ASSETS_BASEPATH
+          APPS_BASEPATH: !Ref APPS_BASEPATH
+          EMAIL_ADDRESS_GENERAL: !Ref FROM_EMAIL_ADDRESS
+          IELTS_BUNDLE_CODE: !Ref IELTS_BUNDLE_CODE
       KmsKeyArn: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${KMSKeyID}"
       Events:
-        QueueForFilterEvent:
+        QueueForFeedbackEmailEvent:
           Type: SQS
           Properties:
-            Queue: !GetAtt QueueForFilter.Arn
+            Queue: !GetAtt QueueForFeedbackEmail.Arn
             BatchSize: 10
 
   SendEmailRole:
@@ -89,56 +112,34 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSLambdaExecute
       Policies:
-        - PolicyName: S3Crud
+        - PolicyName: SendMail
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:PutObjectAcl
-                  - s3:GetLifecycleConfiguration
-                  - s3:PutLifecycleConfiguration
-                  - s3:DeleteObject
+                  - "ses:SendTemplatedEmail"
                 Resource:
-                  - !Sub "arn:aws:s3:::${LogExecutionS3Bucket}"
-                  - !Sub "arn:aws:s3:::${LogExecutionS3Bucket}/*"
-        - PolicyName: SQSSendReceive
+                  - "*"
+        - PolicyName: DeleteMessageFromQueue
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - sqs:GetQueueAttributes
-                  - sqs:SendMessage*
+                  - "sqs:DeleteMessage"
                 Resource:
-                  - !GetAtt QueueForFilter.Arn
-        - PolicyName: KMSAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:DescribeKey
-                  - kms:GenerateDataKey
-                  - kms:Decrypt
-                  - kms:Encrypt
-                Resource:
-                  - !Sub "arn:aws:kms:*:*:key/${KMSKeyID}"
-
+                  - !GetAtt QueueForFeedbackEmail.Arn
 
 Outputs:
-  QueueForFilter:
+  QueueForFeedbackEmail:
     Description: "Queue for applying filter on SNS"
-    Value: !Ref QueueForFilter
+    Value: !Ref QueueForFeedbackEmail
   SendEmailFunction:
-    Description: "Triggered on new entry in QueueForFilter Lambda Function ARN"
+    Description: "Triggered on new entry in QueueForFeedbackEmail Lambda Function ARN"
     Value: !GetAtt SendEmailFunction.Arn
   IELTSubscription:
-    Description: "Triggered on new entry in QueueForFilter Lambda Function ARN"
+    Description: "Triggered on new entry in QueueForFeedbackEmail Lambda Function ARN"
     Value: !GetAtt SendEmailFunction.Arn
   SendEmailRole:
     Description: "Role for SendEmail Lambda Execution ARN"
