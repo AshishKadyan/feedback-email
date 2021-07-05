@@ -29,7 +29,7 @@ const main = async (event, context) => {
     const { emailTypesMap, noCategoryMessageIds } = EmailService.seggregateRecordsByEmailType(messageArray);
 
     logger.info("Following messageIds do not belong to any category " + JSON.stringify(noCategoryMessageIds));
-
+    // records belonging to no category are to be deleted from SQS along with successfully sent mails in last step.
     sucessfullyProcessedMessageIds = sucessfullyProcessedMessageIds.concat(noCategoryMessageIds);
 
     const EmailPromisesForAllTypes = [];

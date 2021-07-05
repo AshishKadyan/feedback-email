@@ -26,6 +26,7 @@ class EmailService {
             throw new CustomEmailError(ApplicationErrors.SCHEMA_VALIDATION_ERROR, null, null);
         }
     }
+    // seggregates emails based on  types.
     static seggregateRecordsByEmailType(messages) {
         let map = {};
         let noCategoryMessageIds = [];
