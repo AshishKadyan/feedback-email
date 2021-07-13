@@ -4,14 +4,6 @@ Transform: AWS::Serverless-2016-10-31
 Description: CUP AWS Serverless Arch. for Email
 
 Parameters:
-  Environment: 
-    Type: String
-    Default: thor
-
-  Realm: 
-    Type: String
-    Default: asgard
-
   KMSKeyID:
     Type: String
     NoEcho: true
@@ -101,8 +93,6 @@ Resources:
       Role: !GetAtt SendEmailRole.Arn
       Environment:
         Variables:
-          DLS_REALM: !Ref Realm
-          DLS_ENV: !Ref Environment
           EMAIL_Q_URL: !GetAtt QueueForFeedbackEmail.Arn
           ACCOUNT_ID: !Ref DlsAccountId
           STATIC_ASSETS_BASEPATH: !Ref StaticAssetsBasepath
