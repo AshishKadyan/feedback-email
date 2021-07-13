@@ -1,5 +1,5 @@
 {
-  "app": "ges",
+  "app": "ges-s",
   "region": "us-west-2",
   "sam_s3": {
     "bucket_name": "cup-central-local-milyr",

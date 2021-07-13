@@ -38,7 +38,7 @@ Resources:
         
   IELTSubscription:
     Type: "AWS::SNS::Subscription"
-    DependsOn: [DeadLetterQueueForSubscription]
+    DependsOn: [DeadLetterQueueForSubscription, QueueForFeedbackEmail]
     Properties:
       TopicArn: !Ref SNSTopicARN
       Endpoint: !GetAtt QueueForFeedbackEmail.Arn
@@ -71,6 +71,7 @@ Resources:
 
   SendEmailFunction:
     Type: "AWS::Serverless::Function"
+    DependsOn: [QueueForFeedbackEmail]
     Properties:
       FunctionName: !Join ["-", [!Ref AWS::StackName, SendEmailFunction]]
       Handler: index.handler
@@ -82,7 +83,7 @@ Resources:
       Role: !GetAtt SendEmailRole.Arn
       Environment:
         Variables:
-          EMAIL_Q_URL: !Ref QueueForFeedbackEmail.Arn
+          EMAIL_Q_URL: !GetAtt QueueForFeedbackEmail.Arn
           ACCOUNT_ID: !Ref DlsAccountId
           STATIC_ASSETS_BASEPATH: !Ref StaticAssetsBasepath
           APPS_BASEPATH: !Ref AppsBasepath
@@ -98,6 +99,7 @@ Resources:
 
   SendEmailRole:
     Type: AWS::IAM::Role
+    DependsOn: [QueueForFeedbackEmail]
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -127,9 +129,26 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "sqs:DeleteMessage"
+                  - sqs:ChangeMessageVisibility
+                  - sqs:ChangeMessageVisibilityBatch
+                  - sqs:DeleteMessage
+                  - sqs:DeleteMessageBatch
+                  - sqs:GetQueueAttributes
+                  - sqs:ReceiveMessage
                 Resource:
                   - !GetAtt QueueForFeedbackEmail.Arn
+        - PolicyName: KMSAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:GenerateDataKey
+                  - kms:Decrypt
+                  - kms:Encrypt
+                Resource:
+                  - !Sub "arn:aws:kms:*:*:key/${KMSKeyID}"
 
 Outputs:
   QueueForFeedbackEmail:
