@@ -80,7 +80,7 @@ exports.handler = async (event, context) => {
                     // step3: send email for each category records;
                     let res;
                     
-                    // res = await EmailService.sendTemplateEmailPromise(data);
+                    res = await EmailService.sendTemplateEmailPromise(data);
     
                     recordLogger.info('Email sent for record');
     

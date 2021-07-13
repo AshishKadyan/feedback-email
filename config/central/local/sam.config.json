@@ -8,9 +8,9 @@
   "parameters": {
     "SNSTopicARN": "arn:aws:sns:us-west-2:567434252311:dls-asgard-thor-s-events-bridge-EventFanOutSNSTopic",
     "DlsAccountId": "cup1",
-    "StaticAssetsBasepath": "StaticAssetsBasepath",
-    "AppsBasepath": "AppsBasepath",
-    "FromEmailAddress": "FromEmailAddress",
+    "StaticAssetsBasepath": "https://asgard-thor-assets.comprodls.com",
+    "AppsBasepath": "https://micro-nemo.comprodls.com",
+    "FromEmailAddress": "noreply@comprodls.com",
     "IeltsBundleCode": "ielts_bundle"
   }
 }
