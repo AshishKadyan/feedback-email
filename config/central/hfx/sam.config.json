@@ -6,12 +6,14 @@
     "bucket_prefix": "sam-milyr"
   },
   "parameters": {
-    "ToolId": "metrica-sup",
-    "DefaultExecutionStartTime": "2020-11-01T00:00:01",
-    "MaxStartTimeOffset": "1209600000",
-    "MetricaClientId": "370SDXVdaieABhJPnjW2J0ksbOleFJRU",
-    "MetricaEndpoint": "https://sandbox-api.cambridgeassessment.org.uk/sup-metrica/v1/",
-    "LoginEndpoint": "https://sandbox-api.cambridgeassessment.org.uk/v1/cambridge.id/token",
-    "ReadStartTimeFromConfig": "false"
+    "SNSTopicARN": "arn:aws:sns:us-west-2:567434252311:dls-asgard-thor-s-events-bridge-EventFanOutSNSTopic",
+    "DlsAccountId": "cup1",
+    "StaticAssetsBasepath": "https://hotfix-assets.cambridgeone.org",
+    "AppsBasepath": "https://hotfix.cambridgeone.org",
+    "FromEmailAddress": "noreply@hotfix.cambridgeone.org",
+    "IeltsBundleCode": "ielts_bundle",
+    "BFnSubnetIds": "subnet-095aef4adb9f45c44,subnet-010cca47f6aa35024",
+    "BFnSecurityGroupIds": "sg-0ec3f203a50f70719",    
+    "AttachLambdaFnToVPC": true
   }
 }

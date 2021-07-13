@@ -7,13 +7,13 @@
   },
   "parameters": {
     "SNSTopicARN": "arn:aws:sns:us-west-2:567434252311:dls-asgard-thor-s-events-bridge-EventFanOutSNSTopic",
-    "DLS_ACCOUNT_ID" : "cup1",
-    "STATIC_ASSETS_BASEPATH" : "",
-    "APPS_BASEPATH" :"",
-    "FROM_EMAIL_ADDRESS" : "",
-    "IELTS_BUNDLE_CODE" : "ielts_bundle"
+    "DlsAccountId": "cup1",
+    "StaticAssetsBasepath": "https://asgard-thor-assets.comprodls.com",
+    "AppsBasepath": "https://micro-nemo.comprodls.com",
+    "FromEmailAddress": "noreply@comprodls.com",
+    "IeltsBundleCode": "ielts_bundle",
+    "BFnSubnetIds": "subnet-0a981b339e2e1c244,subnet-0c989230dae23c6c5",
+    "BFnSecurityGroupIds": "sg-0174f26a0f5f834f2",
+    "AttachLambdaFnToVPC": true
   }
 }
-
-// DLS_ENV : "thor", //script param
-// DLS_REALM : "asgard",// script param
