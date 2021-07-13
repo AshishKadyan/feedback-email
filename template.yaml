@@ -42,6 +42,12 @@ Parameters:
       - true
       - false
 
+  BFnSubnetIds:
+    Type: CommaDelimitedList
+
+  BFnSecurityGroupIds:
+    Type: CommaDelimitedList
+    
 Conditions:
   IsVPCRequired: !Equals [true, !Ref AttachLambdaFnToVPC]
 
