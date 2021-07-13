@@ -106,7 +106,7 @@ case $1 in
     #     config_ssm_parameters="${KEY}=${VALUE} ${config_ssm_parameters}"
     # done
     #additional params from script
-    script_parameters="Group=${2} Environment=${3} App=${config_app}"
+    script_parameters="Realm=${2} Environment=${3} App=${config_app}"
 
     if [ -z "$5" ]; then
         kms_parameters=""
