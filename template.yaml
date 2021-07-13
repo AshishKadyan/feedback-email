@@ -27,6 +27,16 @@ Parameters:
   IeltsBundleCode:
     Type: String
   
+  AttachLambdaFnToVPC: 
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+Conditions:
+  IsVPCRequired: !Equals [true, !Ref AttachLambdaFnToVPC]
+
 Resources:
   DeadLetterQueueForSubscription:
     Type: "AWS::SQS::Queue"
@@ -89,6 +99,13 @@ Resources:
           EMAIL_ADDRESS_GENERAL: !Ref FromEmailAddress
           IELTS_BUNDLE_CODE: !Ref IeltsBundleCode
       KmsKeyArn: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${KMSKeyID}"
+      VpcConfig:
+        !If
+          - IsVPCRequired
+          -
+            SubnetIds: !Ref BFnSubnetIds
+            SecurityGroupIds: !Ref BFnSecurityGroupIds
+          - !Ref 'AWS::NoValue'
       Events:
         QueueForFeedbackEmailEvent:
           Type: SQS

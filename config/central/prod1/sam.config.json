@@ -11,6 +11,9 @@
     "StaticAssetsBasepath": "https://assets.cambridgeone.org",
     "AppsBasepath": "https://cambridgeone.org",
     "FromEmailAddress": "noreply@cambridgeone.org",
-    "IeltsBundleCode": "ielts_bundle"
+    "IeltsBundleCode": "ielts_bundle",
+    "BFnSubnetIds": "subnet-000ca96c487954d62,subnet-0ae7de26fc0da0404",
+    "BFnSecurityGroupIds": "sg-06d29c4f1712c865b",    
+    "AttachLambdaFnToVPC": true
   }
 }

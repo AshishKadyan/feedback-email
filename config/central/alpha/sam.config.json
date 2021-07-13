@@ -11,6 +11,9 @@
     "StaticAssetsBasepath": "https://c1-alpha-assets.cambridgeone.org",
     "AppsBasepath": "https://c1-alpha.cambridgeone.org",
     "FromEmailAddress": "no-reply@c1-alpha.cambridgeone.org",
-    "IeltsBundleCode": "ielts_bundle"
+    "IeltsBundleCode": "ielts_bundle",
+    "BFnSubnetIds": "subnet-031b923c448497aff,subnet-0bd7a46cb9c44d376",
+    "BFnSecurityGroupIds": "sg-093f5afc31bee237c",    
+    "AttachLambdaFnToVPC": false
   }
 }

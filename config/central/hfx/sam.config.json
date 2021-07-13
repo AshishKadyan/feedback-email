@@ -11,6 +11,9 @@
     "StaticAssetsBasepath": "https://hotfix-assets.cambridgeone.org",
     "AppsBasepath": "https://hotfix.cambridgeone.org",
     "FromEmailAddress": "noreply@hotfix.cambridgeone.org",
-    "IeltsBundleCode": "ielts_bundle"
+    "IeltsBundleCode": "ielts_bundle",
+    "BFnSubnetIds": "subnet-095aef4adb9f45c44,subnet-010cca47f6aa35024",
+    "BFnSecurityGroupIds": "sg-0ec3f203a50f70719",    
+    "AttachLambdaFnToVPC": true
   }
 }
