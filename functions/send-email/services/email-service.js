@@ -47,7 +47,8 @@ class EmailService {
     static getEmailTypeForMessage(message) {
 
         // check for ieltsFeedbackType message
-        if (message["bundle-codes"] && message["bundle-codes"].includes(config.ieltsBundleCode)
+        if ( (message["entity"]["part"] == "evaluated_external")
+            && (message["bundle-codes"] && message["bundle-codes"].includes(config.ieltsBundleCode))
             && (message["entity"]["part"] == 2)
         ) {
             return config.email.emailTypes.ieltsFeedback.type;
