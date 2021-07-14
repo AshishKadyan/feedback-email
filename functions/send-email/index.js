@@ -15,7 +15,7 @@ exports.handler = async (event, context) => {
         logger.info(`Started processing '${event.Records.length}' records.`);
     
         let messageArray = event.Records.map((record) => {
-    
+          logger.info("record-data: " + JSON.stringify(record));
           const bodyObj = JSON.parse(record.body);
           const msgObj = JSON.parse(bodyObj.Message);
           msgObj["messageId"] = record.messageId;
