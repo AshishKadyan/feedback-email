@@ -8,21 +8,18 @@ const emailClient = new AWS.SES();
  */
 class EmailService {
 
-    static emailData = {
-        status: null,
-        emailParams: {
-        },
-        receiverEmail: null
-    }
-
-    static getEmailDataObj(){
-        let obj = {};
-        obj = Object.assign(obj,this.emailData);
-        return obj;
+    static getEmailDataObj() {
+        return {
+            status: null,
+            emailParams: {
+            },
+            messageId: null,
+            receiverEmail: null
+        }
     }
 
     static validate(data) {
-        if(!data.receiverEmail || !data.emailParams){
+        if (!data.receiverEmail || !data.emailParams || !data.messageId) {
             throw new CustomEmailError(ApplicationErrors.SCHEMA_VALIDATION_ERROR, null, null);
         }
     }
@@ -47,7 +44,8 @@ class EmailService {
     static getEmailTypeForMessage(message) {
 
         // check for ieltsFeedbackType message
-        if (message["bundle-codes"] && message["bundle-codes"].includes(config.ieltsBundleCode)
+        if ((message["entity"]["verb"] == "evaluated_external")
+            && (message["bundle-codes"] && message["bundle-codes"].includes(config.ieltsBundleCode))
             && (message["entity"]["part"] == 2)
         ) {
             return config.email.emailTypes.ieltsFeedback.type;

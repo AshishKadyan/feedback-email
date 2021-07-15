@@ -1,5 +1,4 @@
 'use strict';
-const event1 = require('./test/event');
 const CommonUtil = require('./utilities/common.util');
 const { Logger } = require('./utilities/logger.util');
 const CustomEmailError = require('./utilities/custom-error.util');
@@ -7,6 +6,8 @@ const ApplicationErrors = require('./utilities/application-errors');
 const getDataForIeltsEmailType = require("./services/email-data-services/ielts-feedback");
 const EmailService = require("./services/email-service");
 const config = require('./config/default.config');
+var AWS = require("aws-sdk");
+
 exports.handler = async (event, context) => {
     try {
 
@@ -14,10 +15,43 @@ exports.handler = async (event, context) => {
         const logger = Logger.getLogger();
         logger.info(`Started processing '${event.Records.length}' records.`);
     
+    event.Records.forEach((record,index) => {
+
+      var body = JSON.parse(record.body);
+      record.body = body;
+      var dynamodbRecord = body.dynamodb;
+
+      //Validate record structure before processing
+      var bValid = false; 
+      if (dynamodbRecord && dynamodbRecord.Keys && dynamodbRecord.Keys.sk && dynamodbRecord.Keys.pk) {
+        bValid = true;
+      }
+      
+
+      if (bValid) {
+
+        //build uuid for traceability
+        var uuid = dynamodbRecord.Keys.pk.S + "$$" + dynamodbRecord.Keys.sk.S;
+
+
+          console.log('Learning event received', uuid);
+
+        var unmarshalledEvent = AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage);
+
+        unmarshalledEvent.uuid = uuid;
+        event.Records[index]["body"]["Message"] = unmarshalledEvent;
+
+      } else {
+        logger.info('Invalid Event type: %j', AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage));
+      }
+
+
+    });
+
         let messageArray = event.Records.map((record) => {
-          logger.info("record-data: " + JSON.stringify(record));
-          const bodyObj = JSON.parse(record.body);
-          const msgObj = JSON.parse(bodyObj.Message);
+      logger.info("record-data: " + JSON.stringify(record));
+      const bodyObj = record.body;
+      const msgObj = bodyObj.Message;
           msgObj["messageId"] = record.messageId;
           Logger.initRecordLogger(context, record, bodyObj);
           return msgObj;
@@ -72,11 +106,11 @@ exports.handler = async (event, context) => {
     
                     data["emailTemplateId"] = `dls-${config.dls.realm}-${config.dls.env}-${config.email.emailTypes[emailType].templateId}`;
     
-                    const recordLogger = Logger.getRecordLogger(messageId);
+                const recordLogger = Logger.getRecordLogger(data.messageId);
     
                     recordLogger.info('Sending email for record.');
                     
-                    logger.info("data",data);
+                recordLogger.info("EMAIL_DATA: ", data);
                     // step3: send email for each category records;
                     let res;
                     
