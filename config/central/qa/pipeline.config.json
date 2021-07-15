@@ -1,12 +1,12 @@
 {
   "region": "us-west-2",
-  "stack": "cup-central-qa-milyr-cf",
+  "stack": "cup-central-qa-ges-cf",
   "parameters": {
-    "PipelineProjectName": "cup-central-qa-milyr-cp",
-    "CodeBuildProjectName": "cup-central-qa-milyr-cb",
+    "PipelineProjectName": "cup-central-qa-ges-cp",
+    "CodeBuildProjectName": "cup-central-qa-ges-cb",
     "ArtifactS3BucketName": "cup-central-build-artifacts",
     "GithubUser": "compro-cup-central",
-    "GithubRepo": "sam-metrica-ilayer",
+    "GithubRepo": "feedback-email",
     "GithubBranch": "env/qa",
     "KMSKeyID": "CHANGE_ME"
   }

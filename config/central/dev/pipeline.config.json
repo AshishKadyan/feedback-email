@@ -1,12 +1,12 @@
 {
   "region": "us-west-2",
-  "stack": "cup-central-dev-milyr-cf",
+  "stack": "cup-central-dev-ges-cf",
   "parameters": {
-    "PipelineProjectName": "cup-central-dev-milyr-cp",
-    "CodeBuildProjectName": "cup-central-dev-milyr-cb",
+    "PipelineProjectName": "cup-central-dev-ges-cp",
+    "CodeBuildProjectName": "cup-central-dev-ges-cb",
     "ArtifactS3BucketName": "dls-asgard-thor-cf-lambda-code",
     "GithubUser": "compro-cup-central",
-    "GithubRepo": "sam-metrica-ilayer",
+    "GithubRepo": "feedback-email",
     "GithubBranch": "env/dev",
     "KMSKeyID": "CHANGE_ME"
   }
