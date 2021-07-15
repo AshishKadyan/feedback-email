@@ -221,6 +221,13 @@ Resources:
                   - kms:CreateGrant
                 Resource:
                   - !Sub "arn:aws:kms:*:*:key/${KMSKeyID}"
+              - Sid: SNSAccess
+                Effect: Allow
+                Action:
+                  - sns:Subscribe
+                Resource:
+                  - arn:aws:sns:*:*:dls-*-events-bridge-EventFanOutSNSTopic
+                  
               
 
   CodePipelineExecutionRole:
