@@ -17,7 +17,7 @@ const config = {
     senderEmail: 'Cambridge One <' + process.env.EMAIL_ADDRESS_GENERAL + '>',
     emailTypes : {
       ieltsFeedback: {
-        templateId: "ieltsFeedbackTemplate",
+        templateId: "ielts-feedback",
         type: "ieltsFeedback",
       }
     }
