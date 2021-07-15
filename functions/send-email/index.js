@@ -33,20 +33,14 @@ exports.handler = async (event, context) => {
         //build uuid for traceability
         var uuid = dynamodbRecord.Keys.pk.S + "$$" + dynamodbRecord.Keys.sk.S;
 
-        //Check if this is a Learning event
-        if (dynamodbRecord.Keys.sk.S.indexOf("learning#") > -1) {
 
           console.log('Learning event received', uuid);
 
-          var learningEvent = AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage);
+        var unmarshalledEvent = AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage);
 
-          learningEvent.uuid = uuid;
-          event.Records[index]["body"]["Message"] = learningEvent
-        }
-        // Unknown type of event.  
-        else {
-          logger.info('Unknown Event type: %j', AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage));
-        }
+        unmarshalledEvent.uuid = uuid;
+        event.Records[index]["body"]["Message"] = unmarshalledEvent;
+
       } else {
         logger.info('Invalid Event type: %j', AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage));
       }
