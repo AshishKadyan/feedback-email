@@ -7,7 +7,7 @@
     "ArtifactS3BucketName": "cup-central-prod1-build-artifacts",
     "GithubUser": "compro-cup-central",
     "GithubRepo": "feedback-email",
-    "GithubBranch": "env/dev",
+    "GithubBranch": "master",
     "KMSKeyID": "CHANGE_ME"
   }
 }
