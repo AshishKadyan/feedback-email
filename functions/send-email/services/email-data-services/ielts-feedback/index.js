@@ -31,6 +31,7 @@ async function getData(messages) {
 
     return messages.map((message, index) => {
         let data = EmailService.getEmailDataObj();
+        data["messageId"] = message["messageId"];
         try {
 
             let userData = usersData.filter((data) => {

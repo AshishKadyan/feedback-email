@@ -1,5 +1,4 @@
 'use strict';
-const event = require('./test/event2');
 const CommonUtil = require('./utilities/common.util');
 const { Logger } = require('./utilities/logger.util');
 const CustomEmailError = require('./utilities/custom-error.util');
@@ -46,25 +45,14 @@ exports.handler = async (event, context) => {
         }
         // Unknown type of event.  
         else {
-          console.log('Unknown Event type: %j', AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage));
+          logger.info('Unknown Event type: %j', AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage));
         }
       } else {
-        console.log('Invalid Event type: %j', AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage));
+        logger.info('Invalid Event type: %j', AWS.DynamoDB.Converter.unmarshall(dynamodbRecord.NewImage));
       }
 
 
     });
-
-
-
-
-
-
-
-
-
-
-
 
     let messageArray = event.Records.map((record) => {
       logger.info("record-data: " + JSON.stringify(record));
@@ -124,11 +112,11 @@ exports.handler = async (event, context) => {
 
                 data["emailTemplateId"] = `dls-${config.dls.realm}-${config.dls.env}-${config.email.emailTypes[emailType].templateId}`;
 
-                const recordLogger = Logger.getRecordLogger(messageId);
+                const recordLogger = Logger.getRecordLogger(data.messageId);
 
                 recordLogger.info('Sending email for record.');
 
-                logger.info("data", data);
+                recordLogger.info("EMAIL_DATA: ", data);
                 // step3: send email for each category records;
                 let res;
 
