@@ -1,12 +1,12 @@
 {
   "region": "us-west-2",
-  "stack": "cup-central-hfx-milyr-cf",
+  "stack": "cup-central-hfx-ges-cf",
   "parameters": {
-    "PipelineProjectName": "cup-central-hfx-milyr-cp",
-    "CodeBuildProjectName": "cup-central-hfx-milyr-cb",
+    "PipelineProjectName": "cup-central-hfx-ges-cp",
+    "CodeBuildProjectName": "cup-central-hfx-ges-cb",
     "ArtifactS3BucketName": "cup-central-build-artifacts",
     "GithubUser": "compro-cup-central",
-    "GithubRepo": "sam-metrica-ilayer",
+    "GithubRepo": "feedback-email",
     "GithubBranch": "env/hfx",
     "KMSKeyID": "CHANGE_ME"
   }

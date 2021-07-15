@@ -3,15 +3,15 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: "CI/CD Pipeline for Metrica Integration Layer"
 Parameters:
   PipelineProjectName:
-    Default: cup-central-local-milyr-pipeline
+    Default: cup-central-local-ges-pipeline
     Description: "Project name for code pipeline"
     Type: String
   CodeBuildProjectName:
-    Default: cup-central-local-milyr-build
+    Default: cup-central-local-ges-build
     Description: "Project name for code build"
     Type: String
   ArtifactS3BucketName:
-    Default: cup-central-milyr-sam
+    Default: cup-central-ges-sam
     Description: "S3 bucket for code pipeline"
     Type: String
   Group:
@@ -27,11 +27,11 @@ Parameters:
     Description: "Github user where the repository lives"
     Type: String
   GithubRepo:
-    Default: sam-milyr
+    Default: feedback-email
     Description: "Gitub Repository name"
     Type: String
   GithubBranch:
-    Default: master
+    Default: env/dev
     Description: "Gitub Branch name"
     Type: String
   GithubToken: 
@@ -49,7 +49,7 @@ Resources:
     Type: "AWS::CodeBuild::Project"
     Properties:
       Name: !Ref CodeBuildProjectName
-      Description: "Build project for sam-milyr"
+      Description: "Build project for sam-ges"
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       TimeoutInMinutes: 10
       Source:
@@ -59,7 +59,7 @@ Resources:
         Type: CODEPIPELINE
       Cache:
         Type: S3
-        Location: !Sub ${ArtifactS3BucketName}/sam-milyr/codebuild-cache
+        Location: !Sub ${ArtifactS3BucketName}/sam-ges/codebuild-cache
       Environment:
         Type: LINUX_CONTAINER
         Image: aws/codebuild/standard:4.0
@@ -170,9 +170,9 @@ Resources:
                 Effect: Allow
                 Action: cloudformation:*
                 Resource:
-                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-milyr*
-                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-milyr*/*
-                  - !Sub arn:aws:cloudformation:*:*:stackset/cup-${Group}-${Environment}-milyr*:*
+                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-ges*/*
+                  - !Sub arn:aws:cloudformation:*:*:stackset/cup-${Group}-${Environment}-ges*:*
               - Sid: AllResource
                 Effect: Allow
                 Action:
@@ -186,23 +186,16 @@ Resources:
                   - iam:*Role
                   - iam:*Policy
                 Resource:
-                  - !Sub arn:aws:iam::*:role/cup-${Group}-${Environment}-milyr*
-                  - !Sub arn:aws:iam::*:policy/cup-${Group}-${Environment}-milyr*
+                  - !Sub arn:aws:iam::*:role/cup-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:iam::*:policy/cup-${Group}-${Environment}-ges*
                   - arn:aws:iam::*:user/*
                   - arn:aws:iam::*:group/*
-              - Sid: AppBucket
-                Effect: Allow
-                Action:
-                  - s3:*
-                Resource:
-                  - !Sub arn:aws:s3:::cup-${Group}-${Environment}-milyr*
-                  - !Sub arn:aws:s3:::cup-${Group}-${Environment}-milyr*/*
               - Sid: LambdaPermissions
                 Effect: Allow
                 Action: lambda:*
                 Resource:
-                  - !Sub arn:aws:lambda:*:*:function:cup-${Group}-${Environment}-milyr*
-                  - !Sub arn:aws:lambda:*:*:layer:cup-${Group}-${Environment}-milyr*
+                  - !Sub arn:aws:lambda:*:*:function:cup-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:lambda:*:*:layer:cup-${Group}-${Environment}-ges*
               - Sid: LambdaEventSourcePermissions
                 Effect: Allow
                 Action:
@@ -217,14 +210,7 @@ Resources:
                 Action:
                   - sqs:*
                 Resource:
-                  - !Sub arn:aws:sqs:*:*:cup-${Group}-${Environment}-milyr*
-              - Sid: SSMAllow
-                Effect: Allow
-                Action:
-                  - ssm:GetParameter*
-                  - ssm:DescribeParameters
-                Resource:
-                  - !Sub arn:aws:ssm:*:*:parameter/${Group}/${Environment}/MILYR*
+                  - !Sub arn:aws:sqs:*:*:cup-${Group}-${Environment}-ges*
               - Sid: KMSAccess
                 Effect: Allow
                 Action:
