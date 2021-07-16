@@ -116,7 +116,7 @@ exports.handler = async (event, context) => {
 
                 res = await EmailService.sendTemplateEmailPromise(data);
 
-                recordLogger.info("sendTemplateEmailPromise response: " + res);
+                recordLogger.info("sendTemplateEmailPromise response: " + JSON.stringify(res));
 
                 recordLogger.info('Email sent for record');
 
