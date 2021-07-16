@@ -85,6 +85,25 @@ Resources:
         deadLetterTargetArn: !GetAtt DeadLetterQueueForFeedbackEmail.Arn
         maxReceiveCount: 5
 
+  SqsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: !Join ["-", [!Ref AWS::StackName, feedbackEmailQueuePolicy]]
+        Statement:
+          - Sid: Allow-SNS-SendMessage
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt QueueForFeedbackEmail.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref SNSTopicARN
+      Queues:
+        - !Ref QueueForFeedbackEmail
+
   SendEmailFunction:
     Type: "AWS::Serverless::Function"
     DependsOn: [QueueForFeedbackEmail]
