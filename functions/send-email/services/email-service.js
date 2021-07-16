@@ -69,6 +69,8 @@ class EmailService {
 
         const emailParams = this.createParamsForEmail(options);
 
+        console.log("emailParams: "+ JSON.stringify(emailParams))
+        
         const response = await emailClient.sendTemplatedEmail(emailParams).promise();
 
         return { success: true, response: response };
