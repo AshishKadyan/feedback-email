@@ -46,7 +46,7 @@ async function getData(messages) {
                 return test["item-code"] == message.entity["item-code"];
             })[0].name;
 
-            let feedbackURL = `ieltsi/${message["extStudentId"]}/product/${message.productcode}/test/${message.entity["item-code"]}/results`;
+            let feedbackURL = `ieltsi/user_${message["extStudentId"]}/product/${message.productcode}/test/${message.entity["item-code"]}/results`;
 
             const { email, first_name, last_name } = userData["user"];
             data.status = true;
