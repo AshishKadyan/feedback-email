@@ -51,7 +51,7 @@ async function getData(messages) {
             const { email, first_name, last_name } = userData["user"];
             data.status = true;
             data.emailParams = {
-                testName: testName,
+                productTitle: testName,
                 firstName: first_name,
                 lastName: last_name,
                 subject: `${first_name}, your ${testName} feedback is ready`,
