@@ -1,8 +1,8 @@
 const config = {
   dls: {
-    env: process.env.DLS_ENV || "thor",
-    realm: process.env.DLS_REALM || "asgard",
-    accountId: process.env.ACCOUNT_ID || "cup1"
+    env: process.env.DLS_ENV,
+    realm: process.env.DLS_REALM,
+    accountId: process.env.ACCOUNT_ID
   },
   emailQueueUrl: process.env.EMAIL_Q_URL, // from template.yaml
   Logger: {

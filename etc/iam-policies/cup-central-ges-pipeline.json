@@ -13,12 +13,8 @@
                 "s3:PutBucketPublicAccessBlock"
             ],
             "Resource": [
-                "arn:aws:s3:::dls-asgard-thor-cf-lambda-code",
-                "arn:aws:s3:::dls-asgard-thor-cf-lambda-code/*",
-                "arn:aws:s3:::cup-central-ges-sam",
-                "arn:aws:s3:::cup-central-ges-sam/*",
-                "arn:aws:s3:::cup-central-build-artifacts",
-                "arn:aws:s3:::cup-central-build-artifacts/*"
+                "arn:aws:s3:::dls-*-*-ges",
+                "arn:aws:s3:::dls-*-*-ges/*"
             ]
         },
         {
@@ -31,7 +27,7 @@
                 "cloudformation:DescribeStacks"
             ],
             "Resource": [
-                "arn:aws:cloudformation:*:*:stack/cup-central-*-ges-cf/*"
+                "arn:aws:cloudformation:*:*:stack/dls-*-*-ges-cf/*"
             ]
         },
         {
@@ -54,8 +50,8 @@
                 "codepipeline:DeletePipeline"
             ],
             "Resource": [
-                "arn:aws:codepipeline:*:*:cup-central-*-ges-cp",
-                "arn:aws:codepipeline:*:*:cup-central-*-ges-cp/*"
+                "arn:aws:codepipeline:*:*:dls-*-*-ges-cp",
+                "arn:aws:codepipeline:*:*:dls-*-*-ges-cp/*"
             ]
         },
         {
@@ -67,7 +63,7 @@
                 "codebuild:DeleteProject"
             ],
             "Resource": [
-                "arn:aws:codebuild:*:*:project/cup-central-*-ges-cb"
+                "arn:aws:codebuild:*:*:project/dls-*-*-ges-cb"
             ]
         },
         {
@@ -98,9 +94,32 @@
                 "iam:DeleteRole"
             ],
             "Resource": [
-                "arn:aws:iam::*:instance-profile/cup-central-*-ges-*",
-                "arn:aws:iam::*:policy/cup-central-*-ges-*",
-                "arn:aws:iam::*:role/cup-central-*-ges-*"
+                "arn:aws:iam::*:instance-profile/dls-*-*-ges-*",
+                "arn:aws:iam::*:policy/dls-*-*-ges-*",
+                "arn:aws:iam::*:role/dls-*-*-ges-*"
+            ]
+        },
+        {
+            "Sid": "SnsListTopicsAccess",
+            "Effect": "Allow",
+            "Action": [
+              "sns:ListTopics"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SnsTopicOperations",
+            "Effect": "Allow",
+            "Action": [
+                "sns:CreateTopic",
+                "sns:GetTopicAttributes",
+                "sns:SetTopicAttributes",
+                "sns:Publish"
+            ],
+            "Resource": [
+                "arn:aws:sns:::dls-*-*-ges",
+                "arn:aws:sns:::dls-*-*-ges/*",
+                "arn:aws:sns:*:*:DevOps-Guru-*"
             ]
         }
     ]

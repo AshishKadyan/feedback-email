@@ -3,19 +3,19 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: "CI/CD Pipeline for Metrica Integration Layer"
 Parameters:
   PipelineProjectName:
-    Default: cup-central-local-ges-pipeline
+    Default: dls-asgard-local-ges-pipeline
     Description: "Project name for code pipeline"
     Type: String
   CodeBuildProjectName:
-    Default: cup-central-local-ges-build
+    Default: dls-asgard-local-ges-build
     Description: "Project name for code build"
     Type: String
   ArtifactS3BucketName:
-    Default: cup-central-ges-sam
+    Default: dls-asgard-ges-sam
     Description: "S3 bucket for code pipeline"
     Type: String
   Group:
-    Default: central
+    Default: asgard
     Description: "Env Group of target sam stack"
     Type: String
   Environment:
@@ -31,7 +31,7 @@ Parameters:
     Description: "Gitub Repository name"
     Type: String
   GithubBranch:
-    Default: env/dev
+    Default: env/thor
     Description: "Gitub Branch name"
     Type: String
   GithubToken: 
@@ -170,9 +170,9 @@ Resources:
                 Effect: Allow
                 Action: cloudformation:*
                 Resource:
-                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-ges*
-                  - !Sub arn:aws:cloudformation:*:*:stack/cup-${Group}-${Environment}-ges*/*
-                  - !Sub arn:aws:cloudformation:*:*:stackset/cup-${Group}-${Environment}-ges*:*
+                  - !Sub arn:aws:cloudformation:*:*:stack/dls-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:cloudformation:*:*:stack/dls-${Group}-${Environment}-ges*/*
+                  - !Sub arn:aws:cloudformation:*:*:stackset/dls-${Group}-${Environment}-ges*:*
               - Sid: AllResource
                 Effect: Allow
                 Action:
@@ -186,16 +186,16 @@ Resources:
                   - iam:*Role
                   - iam:*Policy
                 Resource:
-                  - !Sub arn:aws:iam::*:role/cup-${Group}-${Environment}-ges*
-                  - !Sub arn:aws:iam::*:policy/cup-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:iam::*:role/dls-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:iam::*:policy/dls-${Group}-${Environment}-ges*
                   - arn:aws:iam::*:user/*
                   - arn:aws:iam::*:group/*
               - Sid: LambdaPermissions
                 Effect: Allow
                 Action: lambda:*
                 Resource:
-                  - !Sub arn:aws:lambda:*:*:function:cup-${Group}-${Environment}-ges*
-                  - !Sub arn:aws:lambda:*:*:layer:cup-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:lambda:*:*:function:dls-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:lambda:*:*:layer:dls-${Group}-${Environment}-ges*
               - Sid: LambdaEventSourcePermissions
                 Effect: Allow
                 Action:
@@ -210,7 +210,7 @@ Resources:
                 Action:
                   - sqs:*
                 Resource:
-                  - !Sub arn:aws:sqs:*:*:cup-${Group}-${Environment}-ges*
+                  - !Sub arn:aws:sqs:*:*:dls-${Group}-${Environment}-ges*
               - Sid: KMSAccess
                 Effect: Allow
                 Action:
