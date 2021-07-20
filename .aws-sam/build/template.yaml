@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: DLS AWS Serverless Arch. for Email
+Parameters:
+  KMSKeyID:
+    Type: String
+    NoEcho: true
+    Default: CHANGE_ME
+  SNSTopicARN:
+    Type: String
+  DlsAccountId:
+    Type: String
+  StaticAssetsBasepath:
+    Type: String
+  AppsBasepath:
+    Type: String
+  FromEmailAddress:
+    Type: String
+  IeltsBundleCode:
+    Type: String
+  AttachLambdaFnToVPC:
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  BFnSubnetIds:
+    Type: CommaDelimitedList
+  BFnSecurityGroupIds:
+    Type: CommaDelimitedList
+Conditions:
+  IsVPCRequired:
+    Fn::Equals:
+    - true
+    - Ref: AttachLambdaFnToVPC
+Resources:
+  DeadLetterQueueForSubscription:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - deadLetterQueueForSubscription
+      DelaySeconds: 0
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+  IELTSubscription:
+    Type: AWS::SNS::Subscription
+    DependsOn:
+    - DeadLetterQueueForSubscription
+    - QueueForFeedbackEmail
+    Properties:
+      TopicArn:
+        Ref: SNSTopicARN
+      Endpoint:
+        Fn::GetAtt:
+        - QueueForFeedbackEmail
+        - Arn
+      Protocol: sqs
+      RawMessageDelivery: 'true'
+      FilterPolicy:
+        bundle-codes:
+        - Ref: IeltsBundleCode
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+          - DeadLetterQueueForSubscription
+          - Arn
+  DeadLetterQueueForFeedbackEmail:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - deadLetterQueueForFeedbackEmail
+      DelaySeconds: 0
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+  QueueForFeedbackEmail:
+    Type: AWS::SQS::Queue
+    DependsOn:
+    - DeadLetterQueueForFeedbackEmail
+    Properties:
+      QueueName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - queueForFeedbackEmail
+      VisibilityTimeout: 180
+      ReceiveMessageWaitTimeSeconds: 20
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+          - DeadLetterQueueForFeedbackEmail
+          - Arn
+        maxReceiveCount: 5
+  SendEmailFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+    - QueueForFeedbackEmail
+    Properties:
+      FunctionName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - SendEmailFunction
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: SendEmailFunction
+      Description: Function Triggered on new entry in QueueForFeedbackEmail
+      MemorySize: 512
+      Timeout: 90
+      Role:
+        Fn::GetAtt:
+        - SendEmailRole
+        - Arn
+      Environment:
+        Variables:
+          EMAIL_Q_URL:
+            Fn::GetAtt:
+            - QueueForFeedbackEmail
+            - Arn
+          ACCOUNT_ID:
+            Ref: DlsAccountId
+          STATIC_ASSETS_BASEPATH:
+            Ref: StaticAssetsBasepath
+          APPS_BASEPATH:
+            Ref: AppsBasepath
+          EMAIL_ADDRESS_GENERAL:
+            Ref: FromEmailAddress
+          IELTS_BUNDLE_CODE:
+            Ref: IeltsBundleCode
+      KmsKeyArn:
+        Fn::Sub: arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${KMSKeyID}
+      Events:
+        QueueForFeedbackEmailEvent:
+          Type: SQS
+          Properties:
+            Queue:
+              Fn::GetAtt:
+              - QueueForFeedbackEmail
+              - Arn
+            BatchSize: 1
+  SendEmailRole:
+    Type: AWS::IAM::Role
+    DependsOn:
+    - QueueForFeedbackEmail
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - arn:aws:iam::aws:policy/AWSLambdaExecute
+      Policies:
+      - PolicyName: SendMail
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ses:SendTemplatedEmail
+            Resource:
+            - '*'
+      - PolicyName: DeleteMessageFromQueue
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - sqs:ChangeMessageVisibility
+            - sqs:ChangeMessageVisibilityBatch
+            - sqs:DeleteMessage
+            - sqs:DeleteMessageBatch
+            - sqs:GetQueueAttributes
+            - sqs:ReceiveMessage
+            Resource:
+            - Fn::GetAtt:
+              - QueueForFeedbackEmail
+              - Arn
+      - PolicyName: KMSAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - kms:DescribeKey
+            - kms:GenerateDataKey
+            - kms:Decrypt
+            - kms:Encrypt
+            Resource:
+            - Fn::Sub: arn:aws:kms:*:*:key/${KMSKeyID}
+Outputs:
+  QueueForFeedbackEmail:
+    Description: Queue for applying filter on SNS
+    Value:
+      Ref: QueueForFeedbackEmail
+  SendEmailFunction:
+    Description: Triggered on new entry in QueueForFeedbackEmail Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - SendEmailFunction
+      - Arn
+  IELTSubscription:
+    Description: Triggered on new entry in QueueForFeedbackEmail Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - SendEmailFunction
+      - Arn
+  SendEmailRole:
+    Description: Role for SendEmail Lambda Execution ARN
+    Value:
+      Fn::GetAtt:
+      - SendEmailRole
+      - Arn

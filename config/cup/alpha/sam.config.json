@@ -1,0 +1,19 @@
+{
+  "app": "milyr",
+  "region": "us-west-2",
+  "sam_s3": {
+    "bucket_name": "dls-cup-alpha-build-artifacts",
+    "bucket_prefix": "sam-milyr"
+  },
+  "parameters": {
+    "SNSTopicARN": "arn:aws:sns:us-west-2:567434252311:dls-asgard-thor-s-events-bridge-EventFanOutSNSTopic",
+    "DlsAccountId": "cup1",
+    "StaticAssetsBasepath": "https://c1-alpha-assets.cambridgeone.org",
+    "AppsBasepath": "https://c1-alpha.cambridgeone.org",
+    "FromEmailAddress": "no-reply@c1-alpha.cambridgeone.org",
+    "IeltsBundleCode": "ielts_bundle",
+    "BFnSubnetIds": "subnet-031b923c448497aff,subnet-0bd7a46cb9c44d376",
+    "BFnSecurityGroupIds": "sg-093f5afc31bee237c",    
+    "AttachLambdaFnToVPC": false
+  }
+}

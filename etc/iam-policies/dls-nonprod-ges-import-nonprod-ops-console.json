@@ -1,0 +1,171 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListBuckets",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AccessLocalBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:GetBucketPolicy"
+      ],
+      "Resource": [
+        "arn:aws:s3:::dls-*-*-ges*",
+        "arn:aws:s3:::dls-*-*-ges*/*"
+      ]
+    },
+    {
+      "Sid": "CodePipelineAccess",
+      "Effect": "Allow",
+      "Action": [
+        "codepipeline:GetPipeline",
+        "codepipeline:GetPipelineState",
+        "codepipeline:GetPipelineExecution",
+        "codepipeline:ListPipelineExecutions",
+        "codepipeline:ListActionExecutions",
+        "codepipeline:ListActionTypes",
+        "codepipeline:ListPipelines",
+        "codepipeline:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CodePipelineActions",
+      "Effect": "Allow",
+      "Action": [
+        "codepipeline:EnableStageTransition",
+        "codepipeline:DisableStageTransition",
+        "codepipeline:StartPipelineExecution",
+        "codepipeline:StopPipelineExecution"
+      ],
+      "Resource": "arn:aws:codepipeline:*:*:dls-*-*-ges*"
+    },
+    {
+      "Sid": "CodeBuildAccess",
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:BatchGet*",
+        "codebuild:GetResourcePolicy",
+        "codebuild:List*",
+        "logs:GetLogEvents"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ListQueues",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:ListQueues",
+        "sqs:ListQueueTags",
+        "sqs:ListDeadLetterSourceQueues",
+        "sqs:GetQueueUrl",
+        "sqs:GetQueueAttributes",
+        "cloudwatch:GetMetricStatistics"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ManageQueues",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:PurgeQueue"
+      ],
+      "Resource": "arn:aws:sqs:*:*:dls-*-*-ges*"
+    },
+    {
+      "Sid": "ListLambda",
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:ListStacks",
+        "cloudformation:DescribeStacks",
+        "cloudformation:ListStackResources",
+        "cloudformation:DescribeStackResources",
+        "cloudwatch:GetMetricData",
+        "lambda:ListFunctions",
+        "lambda:GetEventSourceMapping",
+        "lambda:ListTags",
+        "lambda:ListEventSourceMappings",
+        "lambda:GetAccountSettings",
+        "lambda:ListLayers",
+        "lambda:ListLayerVersions"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "LambdaViewFunctions",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:GetFunction",
+        "lambda:GetFunctionEventInvokeConfig",
+        "lambda:GetPolicy",
+        "lambda:ListAliases",
+        "lambda:ListVersionsByFunction",
+        "lambda:ListProvisionedConcurrencyConfigs"
+      ],
+      "Resource": "arn:aws:lambda:*:*:function:dls-*-*-ges*"
+    },
+    {
+      "Sid": "ManageLayerVersions",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:GetLayerVersion"
+      ],
+      "Resource": "arn:aws:lambda:*:*:layer:dls-*-*-ges*"
+    },
+    {
+      "Sid": "ListLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:DescribeQueries",
+        "logs:GetQueryResults",
+        "logs:FilterLogEvents",
+        "logs:StartQuery"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ViewLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:*"
+      ],
+      "Resource": "arn:aws:logs:*:*:log-group:/aws/lambda/dls-*-*-ges*"
+    },
+    {
+      "Sid": "iamReadPermissions",
+      "Effect": "Allow",
+      "Action": [
+        "iam:ListPolicies",
+        "iam:ListRolePolicies",
+        "iam:ListRoles",
+        "iam:ListAttachedRolePolicies",
+        "iam:GetRole",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:GetRolePolicy"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SnsListTopicsAccess",
+      "Effect": "Allow",
+      "Action": [
+        "sns:ListTopics"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

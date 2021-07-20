@@ -1,0 +1,13 @@
+{
+  "region": "us-west-2",
+  "stack": "dls-asgard-thor-ges-cf",
+  "parameters": {
+    "PipelineProjectName": "dls-asgard-thor-ges-cp",
+    "CodeBuildProjectName": "dls-asgard-thor-ges-cb",
+    "ArtifactS3BucketName": "dls-asgard-thor-cf-lambda-code",
+    "GithubUser": "compro-cup-central",
+    "GithubRepo": "feedback-email",
+    "GithubBranch": "env/thor",
+    "KMSKeyID": "CHANGE_ME"
+  }
+}

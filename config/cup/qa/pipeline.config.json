@@ -1,0 +1,13 @@
+{
+  "region": "us-west-2",
+  "stack": "dls-cup-qa-ges-cf",
+  "parameters": {
+    "PipelineProjectName": "dls-cup-qa-ges-cp",
+    "CodeBuildProjectName": "dls-cup-qa-ges-cb",
+    "ArtifactS3BucketName": "dls-cup-qa-build-artifacts",
+    "GithubUser": "compro-cup-central",
+    "GithubRepo": "feedback-email",
+    "GithubBranch": "env/qa",
+    "KMSKeyID": "CHANGE_ME"
+  }
+}

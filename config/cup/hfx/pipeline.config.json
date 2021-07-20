@@ -1,0 +1,13 @@
+{
+  "region": "us-west-2",
+  "stack": "dls-cup-hfx-ges-cf",
+  "parameters": {
+    "PipelineProjectName": "dls-cup-hfx-ges-cp",
+    "CodeBuildProjectName": "dls-cup-hfx-ges-cb",
+    "ArtifactS3BucketName": "dls-cup-build-artifacts",
+    "GithubUser": "compro-cup-central",
+    "GithubRepo": "feedback-email",
+    "GithubBranch": "env/hfx",
+    "KMSKeyID": "CHANGE_ME"
+  }
+}
