@@ -1,8 +1,8 @@
 const config = {
   dls: {
-    env: process.env.DLS_ENV,
-    realm: process.env.DLS_REALM,
-    accountId: process.env.ACCOUNT_ID
+    env: process.env.DLS_ENV || "thor",
+    realm: process.env.DLS_REALM || "asgard",
+    accountId: process.env.ACCOUNT_ID || "cup1"
   },
   emailQueueUrl: process.env.EMAIL_Q_URL, // from template.yaml
   Logger: {
@@ -17,7 +17,7 @@ const config = {
     senderEmail: 'Cambridge One <' + process.env.EMAIL_ADDRESS_GENERAL + '>',
     emailTypes : {
       ieltsFeedback: {
-        templateId: "ielts-feedback",
+        templateId: "ieltsFeedbackTemplate",
         type: "ieltsFeedback",
       }
     }

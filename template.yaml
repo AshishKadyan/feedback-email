@@ -1,9 +1,17 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
-Description: CUP AWS Serverless Arch. for Email
+Description: DLS AWS Serverless Arch. for Email
 
 Parameters:
+  Group:
+    Type: String
+    Default: local
+    
+  Environment:
+    Type: String
+    Default: local
+
   KMSKeyID:
     Type: String
     NoEcho: true
@@ -14,6 +22,7 @@ Parameters:
 
   DlsAccountId:
     Type: String
+    Default: cup1
   
   StaticAssetsBasepath:
     Type: String
@@ -124,6 +133,8 @@ Resources:
           APPS_BASEPATH: !Ref AppsBasepath
           EMAIL_ADDRESS_GENERAL: !Ref FromEmailAddress
           IELTS_BUNDLE_CODE: !Ref IeltsBundleCode
+          DLS_ENV: !Ref Environment
+          DLS_REALM: !Ref Group
       KmsKeyArn: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${KMSKeyID}"
       VpcConfig:
         !If

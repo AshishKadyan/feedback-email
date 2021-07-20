@@ -1,0 +1,126 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "WriteBuildArtifactBucket",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:CreateBucket",      
+                "s3:PutObject",
+                "s3:PutBucketVersioning",
+                "s3:PutBucketPublicAccessBlock"
+            ],
+            "Resource": [
+                "arn:aws:s3:::dls-*-*-ges",
+                "arn:aws:s3:::dls-*-*-ges/*"
+            ]
+        },
+        {
+            "Sid": "CreateCFStack",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:UpdateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStacks"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:*:*:stack/dls-*-*-ges-cf/*"
+            ]
+        },
+        {
+            "Sid": "CreateCFBucket",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:CreateUploadBucket"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ReadWriteCodePipeline",
+            "Effect": "Allow",
+            "Action": [
+                "codepipeline:CreatePipeline",
+                "codepipeline:GetPipeline",
+                "codepipeline:GetPipelineState",
+                "codepipeline:DisableStageTransition",
+                "codepipeline:UpdatePipeline",
+                "codepipeline:DeletePipeline"
+            ],
+            "Resource": [
+                "arn:aws:codepipeline:*:*:dls-*-*-ges-cp",
+                "arn:aws:codepipeline:*:*:dls-*-*-ges-cp/*"
+            ]
+        },
+        {
+            "Sid": "CreateCodeBuildProject",
+            "Effect": "Allow",
+            "Action": [
+                "codebuild:CreateProject",
+                "codebuild:UpdateProject",
+                "codebuild:DeleteProject"
+            ],
+            "Resource": [
+                "arn:aws:codebuild:*:*:project/dls-*-*-ges-cb"
+            ]
+        },
+        {
+            "Sid": "ReadIAMRolePolicy",
+            "Effect": "Allow",
+            "Action": [
+                "iam:ListPolicies",
+                "iam:GetRole",
+                "iam:ListRoles",
+                "iam:ListAttachedRolePolicies",
+                "iam:GetRolePolicy"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "WriteIAMRolePolicy",
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:CreatePolicy",
+                "iam:CreateInstanceProfile",
+                "iam:UpdateAssumeRolePolicy",
+                "iam:AttachRolePolicy",
+                "iam:PutRolePolicy",
+                "iam:AddRoleToInstanceProfile",
+                "iam:PassRole",
+                "iam:DeleteRolePolicy",
+                "iam:DeleteRole"
+            ],
+            "Resource": [
+                "arn:aws:iam::*:instance-profile/dls-*-*-ges-*",
+                "arn:aws:iam::*:policy/dls-*-*-ges-*",
+                "arn:aws:iam::*:role/dls-*-*-ges-*"
+            ]
+        },
+        {
+            "Sid": "SnsListTopicsAccess",
+            "Effect": "Allow",
+            "Action": [
+              "sns:ListTopics"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SnsTopicOperations",
+            "Effect": "Allow",
+            "Action": [
+                "sns:CreateTopic",
+                "sns:GetTopicAttributes",
+                "sns:SetTopicAttributes",
+                "sns:Publish"
+            ],
+            "Resource": [
+                "arn:aws:sns:::dls-*-*-ges",
+                "arn:aws:sns:::dls-*-*-ges/*",
+                "arn:aws:sns:*:*:DevOps-Guru-*"
+            ]
+        }
+    ]
+}

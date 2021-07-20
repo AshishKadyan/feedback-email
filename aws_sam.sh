@@ -83,7 +83,7 @@ case $1 in
     yell "SAM: Deploying application"
 
     # Construct Stack name appending env at the end
-    computed_stack_name="cup-$2-$3-${config_app}"
+    computed_stack_name="dls-$2-$3-${config_app}"
     yell "Creating Stack: ${computed_stack_name}"
 
     sdeploy="${scmd} deploy --s3-bucket ${config_s3_bucket_name} --s3-prefix ${config_s3_bucket_prefix} --region ${config_region} --capabilities ${var_capabilties} --stack-name ${computed_stack_name} ${var_common_params}"
