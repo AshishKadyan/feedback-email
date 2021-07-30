@@ -179,6 +179,10 @@ Resources:
                   - cloudformation:*ChangeSet
                   - iam:List*
                   - events:*
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeVpcs
+                  - ec2:CreateNetworkInterface
                 Resource: "*"
               - Sid: DeployIAMsLambda
                 Effect: Allow
@@ -225,6 +229,7 @@ Resources:
                 Effect: Allow
                 Action:
                   - sns:Subscribe
+                  - sns:Unsubscribe
                 Resource:
                   - arn:aws:sns:*:*:dls-*-events-bridge-EventFanOutSNSTopic
                   
