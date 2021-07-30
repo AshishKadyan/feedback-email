@@ -1,5 +1,5 @@
-# Metrica Integration Layer
-This is the implementation for the Metrica Integration Layer architecture.
+# Service Email
+This is the implementation for the Service Email architecture.
 It uses AWS SAM as the underlying tool for managing developer workflow and related deployments.
 
 ## Getting Started
@@ -20,16 +20,16 @@ Before proceeding in this section, your local development machine would need to 
 #### CLONE the Repository
 ```bash
 # Clone the Repo
-git clone https://github.com/compro-cup-central/sam-metrica-ilayer.git
+git clone https://github.com/compro-cup-central/service-email.git
 
 # Change directory
-cd sam-metrica-ilayer
+cd service-email
 ```
 
 ### 2. Environment Configurations
 
-Environment configurations are placed in `config` folder at the root directory. Environments (and their corresponding config files) are organized into groups, e.g. `central`, `elt` etc. 
-For each group, there are be multiple environments (one config file per environment) e.g `dev`, `qa`, `rel`, `hfx`, `prod`. In each environment, configuration is present in `sam.config.json`
+Environment configurations are placed in `config` folder at the root directory. Environments (and their corresponding config files) are organized into groups, e.g. `asgard`, `cup` etc. 
+For each group, there are be multiple environments (one config file per environment) e.g `thor`, `qa`, `rel`, `hfx`, `prod1`. In each environment, configuration is present in `sam.config.json`
 
 The config files (one per environment) typically contain configuration and other inputs needed by the serverless application. While each environment is expected to have a number of fields, the values of those fields are expected to change based on the environment.
 
@@ -38,16 +38,16 @@ The config files (one per environment) typically contain configuration and other
 #### 3.1 Prerequisites: AWS IAM and Build Artifact S3 Bucket
 You will need an AWS account to build and deploy this application. There are two key requirements:
 
-* A S3 Bucket for SAM Build Artifacts - which the SAM CLI will use to host lambda packages (code) prior to deployment to AWS. For a quick start, create a S3 bucket called `cup-central-milyr-sam-dev` in the same AWS region in which stack is to be deployed
-* An IAM with appropriate permissions to S3 bucket, AWS Lambda and AWS Cloudformation. For a quick start, create an IAM user with similar policy as mentioned in this [file](./etc/iam-policies/cup-central-local-metrica-ilayer-sam.json).
+* A S3 Bucket for SAM Build Artifacts - which the SAM CLI will use to host lambda packages (code) prior to deployment to AWS. For a quick start, create a S3 bucket called `dls-asgard-thor-ges` in the same AWS region in which stack is to be deployed
+* An IAM with appropriate permissions to S3 bucket, AWS Lambda and AWS Cloudformation. For a quick start, create an IAM user with similar policy as mentioned in this [file](./etc/iam-policies/dls-local-ges-sam.json).
 
 #### 3.2 SAM Config file
 Following mandatory keys need to be present in every config file:
-* app - Name of the application, e.g. 'milyr'. This name will be used to construct unique stacks in AWS cloud formation.
+* app - Name of the application, e.g. 'ges'. This name will be used to construct unique stacks in AWS cloud formation.
 * region - AWS Region in which stack will be deployed, e.g. 'us-west-2'
 * sam_s3 - Configurations related to AWS S3 bucket needed for SAM
-   * bucket_name - The name of the S3 bucket used for uploading the build artifacts., e.g. 'cup-central-milyr-sam-dev' 
-   * bucket_prefix - A prefix name that the command adds to the artifacts name when it uploads them to the S3 bucket. The prefix name is a path name (folder name) for the S3 bucket., e.g. 'sam-milyr'
+   * bucket_name - The name of the S3 bucket used for uploading the build artifacts., e.g. 'dls-asgard-thor-ges' 
+   * bucket_prefix - A prefix name that the command adds to the artifacts name when it uploads them to the S3 bucket. The prefix name is a path name (folder name) for the S3 bucket., e.g. 'sam-ges'
 * parameters - Key value map of custom application parameters (or environment variables), for e.g.
    * Key 1 - Value 1 
    * Key 2 - Value 2
@@ -57,20 +57,20 @@ Following mandatory keys need to be present in every config file:
 **Bash Script Arguments** - Bash script will expect 3 arguments for following listed command
    * Action - Supported actions are - `build` and `deploy`. Details are in next section.
    * Environment Group - Environments (and their corresponding config files) are be organized into groups, e.g. 'central', 'elt' etc. Supported value - `central`
-   * Environment - For each environment group, there can be multiple environments (one config file per environment). Supported values - `dev`, `qa`, `rel`, `prod1`.
+   * Environment - For each environment group, there can be multiple environments (one config file per environment). Supported values - `thor`, `qa`, `rel`, `prod1`, `hfx`
    * IAM Profile (Optional) - AWS Named profile, which should be used to run the script in case there are multiple profiles configured
 
 For the given Group and Environment, there must be a sam configuration file present as mentioned in section above
 
 ##### BUILD
 ```bash
-./aws_sam.sh build central dev
+./aws_sam.sh build asgard thor
 ``` 
 This  build command will first validate the template and then compile dependencies for Lambda functions. It will create a folder named `.aws-sam` in the root directory containing build artifacts that you can deploy to Lambda using the deploy command.
 
 ##### DEPLOY
 ```bash 
-./aws_sam.sh deploy central dev
+./aws_sam.sh deploy asgard thor
 ```
 This command uses will first upload the build artifacts to S3 bucket and will then use that to deploy your application in the region mentioned in config file with stack name generated using combination of environment group, the environment and application name.
 
@@ -101,8 +101,8 @@ Before creating the pipeline stack, we should have following AWS Resources handy
 
 * A S3 Bucket for Pipeline Artifacts (in same AWS region in which stack is to be deployed) - which the Code Pipeline use for communicating between source and build stage. We can use same S3 bucket also which was used for storing SAM application build artifacts
 * Following AWS IAMs
-   * Create and Manage Pipeline - An IAM User having permissions to create/update pipeline resources. This IAM user will run the pipeline script. User can be created with similar policy as defined in [file](./etc/iam-policies/cup-central-nonprod-metrica-ilayer-create-stack.json)
-   * Ops IAM - An IAM User responsible to manage deployments - have permissions to invoke pipeline via console, access to code build logs. User can be created with similar policy as defined in [file](./etc/iam-policies/cup-central-nonprod-metrica-ilayer-ops-console.json)
+   * Create and Manage Pipeline - An IAM User having permissions to create/update pipeline resources. This IAM user will run the pipeline script. User can be created with similar policy as defined in [file](./etc/iam-policies/dls-nonprod-ges-create-stack.json)
+   * Ops IAM - An IAM User responsible to manage deployments - have permissions to invoke pipeline via console, access to code build logs. User can be created with similar policy as defined in [file](dls-nonprod-ges-nonprod-ops-console.json)
 
 #### 4.2 Key Files
 Following are the key files required to create pipeline stack
@@ -116,10 +116,10 @@ The `pipeline.config.json` typically contain configuration and other inputs need
 
 Following are the description of various fields of pipeline.json
 * region - AWS Region in which stack will be deployed, e.g. 'us-west-2'
-* stack - Name of AWS Stack that will be created, e.g. 'cup-central-dev-milyr-cf'
+* stack - Name of AWS Stack that will be created, e.g. 'dls-asgard-thor-ges-cf'
 * parameters - Key value map of custom application parameters which are passed to cloudformation template to configure the pipeline, for e.g.
-   * PipelineProjectName - Name of pipeline to be cerated, e.g. 'cup-central-dev-milyr-cp'
-   * CodeBuildProjectName - Name of build project to be use by pipeline, e.g. 'cup-central-dev-milyr-cb'
+   * PipelineProjectName - Name of pipeline to be cerated, e.g. 'dls-asgard-thor-ges-cp'
+   * CodeBuildProjectName - Name of build project to be use by pipeline, e.g. 'dls-asgard-thor-ges-cb'
    * ArtifactS3BucketName - Name of bucket used to store artifacts as requried by code pipeline and code build.
    * GithubUser - Name of github user
    * GithubRepo - Name of github repository
@@ -129,8 +129,8 @@ Following are the description of various fields of pipeline.json
 
 **Bash Script Arguments** - Bash script will expect 5 arguments for following listed command
    * Action - Supported actions are - `create` and `update`. Details are in next section.
-   * Environment Group - Environments (and their corresponding config files) are be organized into groups, e.g. 'central', 'elt' etc. Supported value - `central`
-   * Environment - For each environment group, there can be multiple environments (one config file per environment). Supported values - `dev`, `qa`, `rel`, `prod1`.
+   * Environment Group - Environments (and their corresponding config files) are be organized into groups, e.g. 'asgard', 'cup' etc. 
+   * Environment - For each environment group, there can be multiple environments (one config file per environment). Supported values - `thor`, `qa`, `rel`, `prod1`, `hfx`.
    * IAM Profile (Optional) - If multiple profiles are configured on a system, we can pass the name of aws profile to be used to execute the script
    * Github Oauth Token (Optional) - GitHub personal access token for this application. See [here](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) for how to create the token - CodePipeline needs just the repo scope permissions. Other option is to pass a random string and authenticate by console by editing the pipeline
 
@@ -139,13 +139,13 @@ For the given Group and Environment, there must be a configuration file present 
 
 ##### CREATE
 ```bash
-./pipeline.sh create central dev
+./pipeline.sh create asgard thor
 ``` 
 This command will pick the required configuration file and use the values defined in that to create a new stack in the region specified. It will use the parameters defined in cofniguration file to create the code pipeline. Upon creation, pipeline will trigger automatically
 
 ##### UPDATE
 ```bash 
-./pipeline.sh update central dev
+./pipeline.sh update asgard thor
 ```
 In case pipeline stack needs to be update, this command can be used to update the pipeline or code build property
 
@@ -169,15 +169,15 @@ To see the pipeline, Visit [Link](https://us-west-2.console.aws.amazon.com/codes
 ├───template.yaml               # SAM Template
 ├───pipeline.yaml               # Cloudformation file having code pipeline stack config
 ├───buildspec.yaml              # Build file having commands used by Code build
-├───aws_sam.sh                  # She;; script for deploying sam application
+├───aws_sam.sh                  # Shell script for deploying sam application
 ├───pipeline.sh                 # Shell script for creating pipeline stack
 ├───config                      # Folder holding configuration files
-│   central                         # Folder representing Environment Group
-│       └───dev                          # Folder representing Environment
+│   asgard                         # Folder representing Environment Group
+│       └───thor                          # Folder representing Environment
 │           └───sam.config.json                 # Config json file having sam configuration
 │           └───pipeline.config.json            # Config json file having Pipeline configuration
 ├───functions                   # Contains source code for Lambda functions
-│   └───process-test                      # Folder depictng lambda function
+│   └───send-email                      # Folder depictng lambda function
 │       └───index.js                   # Main JS file containing Lambda Handler
 │       └───package.json                # Standard NPM package.json for dependencies and other metadata
 ```
